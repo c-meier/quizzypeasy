@@ -16,7 +16,7 @@ trait PossibleAnswerComponent {
   import profile.api._
 
   // This class convert the database's user table in a object-oriented entity: the User model.
-  class PossibleAnswersTable(tag: Tag) extends Table[PossibleAnswer](tag, "possible_answer") {
+  class PossibleAnswersTable(tag: Tag) extends Table[PossibleAnswer](tag, "possible_answers") {
     def id = column[Long]("id_possible_answer", O.PrimaryKey, O.AutoInc) // Primary key, auto-incremented
     def value = column[String]("value")
     def questionId = column[Option[Long]]("questionId")
