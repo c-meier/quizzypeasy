@@ -19,13 +19,12 @@ trait UsersComponent {
   class UsersTable(tag: Tag) extends Table[User](tag, "users") {
     def id = column[Long]("id_user", O.PrimaryKey, O.AutoInc) // Primary key, auto-incremented
     def name = column[String]("user_name")
-    def hash = column[String]("hash")
-    def salt = column[String]("salt")
+    def password = column[String]("password")
     def dateInscription = column[Date]("date_inscription")
     def isAdmin = column[Boolean]("is_admin")
 
     // Map the attributes with the model; the ID is optional.
-    def * = (id.?, name, hash, salt, dateInscription, isAdmin) <> (User.tupled, User.unapply)
+    def * = (id.?, name, dateInscription, isAdmin) <> (User.tupled, User.unapply)
   }
 
 }

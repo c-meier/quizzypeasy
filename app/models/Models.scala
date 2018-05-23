@@ -2,17 +2,18 @@ package models
 
 import java.util.Date
 
+import models.QuestionType.QuestionType
+
 case class User(
                  id: Option[Long],
                  name: String,
-                 hash: String,
-                 salt: String,
+                 password: String,
                  dateInscription: Date,
                  isAdmin: Boolean)
 
 case class Quiz(
                id: Option[Long],
-               score: Int,
+               score: Option[Int],
                categoryId: Long,
                userId: Option[Long]
                )
@@ -27,7 +28,7 @@ case class Question(
                    id: Option[Long],
                    name: String,
                    content: String,
-                   questionType: QuestionType.type,
+                   questionType: QuestionType,
                    correctAnswerId: Long
                    )
 
@@ -38,6 +39,7 @@ case class PossibleAnswer(
                          )
 
 case class Answer(
+                 id: Option[Long],
                  userAnswer: String,
                  isFinal: Boolean,
                  questionId: Long,
