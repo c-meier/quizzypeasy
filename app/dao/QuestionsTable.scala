@@ -14,6 +14,11 @@ trait QuestionsComponent {
 
   import profile.api._
 
+  implicit val questionTypeMapper = MappedColumnType.base[QuestionType, Int](
+    e => e.id,
+    i => QuestionType.apply(i)
+  )
+
   // This class convert the database's user table in a object-oriented entity: the User model.
   class QuestionsTable(tag: Tag) extends Table[Question](tag, "questions") {
     def id = column[Long]("id_question", O.PrimaryKey, O.AutoInc) // Primary key, auto-incremented
@@ -23,7 +28,7 @@ trait QuestionsComponent {
     def correctAnswerId = column[Long]("correct_answer_id")
 
     // Map the attributes with the model; the ID is optional.
-    def * = (id.?, name, content, questionType, correctAnswerId) <> (Quiz.tupled, Quiz.unapply)
+    def * = (id.?, name, content, questionType, correctAnswerId) <> (Question.tupled, Question.unapply)
   }
 }
 

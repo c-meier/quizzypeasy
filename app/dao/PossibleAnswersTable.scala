@@ -34,7 +34,7 @@ trait PossibleAnswerComponent {
 // configuration file.
 @Singleton
 class PossibleAnswersDAO @Inject()(protected val dbConfigProvider: DatabaseConfigProvider)(implicit executionContext: ExecutionContext)
-  extends PossibleAnswerComponent with Question with HasDatabaseConfigProvider[JdbcProfile] {
+  extends PossibleAnswerComponent with QuestionsComponent with HasDatabaseConfigProvider[JdbcProfile] {
   import profile.api._
 
   // Get the object-oriented list of courses directly from the query table.

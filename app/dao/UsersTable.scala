@@ -1,6 +1,7 @@
 package dao
 
-import java.util.Date
+
+import java.sql.Date
 
 import javax.inject.{Inject, Singleton}
 import play.api.db.slick.DatabaseConfigProvider
@@ -24,7 +25,7 @@ trait UsersComponent {
     def isAdmin = column[Boolean]("is_admin")
 
     // Map the attributes with the model; the ID is optional.
-    def * = (id.?, name, dateInscription, isAdmin) <> (User.tupled, User.unapply)
+    def * = (id.?, name, password, dateInscription, isAdmin) <> (User.tupled, User.unapply)
   }
 
 }

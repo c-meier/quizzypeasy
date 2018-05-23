@@ -10,13 +10,13 @@ import slick.jdbc.JdbcProfile
 import scala.concurrent.{ExecutionContext, Future}
 import models.{Category}
 
-trait CategoryComponent {
+trait CategoriesComponent {
   self: HasDatabaseConfigProvider[JdbcProfile] =>
 
   import profile.api._
 
   // This class convert the database's user table in a object-oriented entity: the User model.
-  class UsersTable(tag: Tag) extends Table[Category](tag, "categories") {
+  class CategoriesTable(tag: Tag) extends Table[Category](tag, "categories") {
     def id = column[Long]("id_category", O.PrimaryKey, O.AutoInc) // Primary key, auto-incremented
     def name = column[String]("category_name")
     def description = column[String]("description")
@@ -32,12 +32,12 @@ trait CategoryComponent {
 // driver. The class extends the courses' query table and loads the JDBC profile configured in the application's
 // configuration file.
 @Singleton
-class CategoryDAO @Inject()(protected val dbConfigProvider: DatabaseConfigProvider)(implicit executionContext: ExecutionContext)
-  extends UsersComponent with HasDatabaseConfigProvider[JdbcProfile] {
+class CategoriesDAO @Inject()(protected val dbConfigProvider: DatabaseConfigProvider)(implicit executionContext: ExecutionContext)
+  extends CategoriesComponent with HasDatabaseConfigProvider[JdbcProfile] {
   import profile.api._
 
   // Get the object-oriented list of courses directly from the query table.
-  val categories = TableQuery[CategoryTable]
+  val categories = TableQuery[CategoriesTable]
 
 
 }
