@@ -1,0 +1,24 @@
+@(message: String)
+@defining(play.core.PlayVersion.current) { version =>
+
+    <section id="top">
+        <div class="wrapper">
+            <h1><a href="https://playframework.com/documentation/@version/Quiz">@message</a></h1>
+        </div>
+    </section>
+
+    <div class="content">
+            <!--from https://codepen.io/maheshambure21/pen/bNXXeM/-->
+        <h2>School</h2>
+        <div class="grid">
+            <figure class="effect-img">
+                <img src="@routes.Assets.versioned("images/scala2.png")" alt="scala"/>
+                <figcaption>
+                    <h2><span></span></h2>
+                    <p>If I were to pick another language to use today other than Java, it would be SCALA - James Gosling</p>
+                    <a href="#">View more</a>
+                </figcaption>
+            </figure>
+        </div>
+    </div>
+}
