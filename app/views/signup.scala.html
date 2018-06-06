@@ -1,0 +1,32 @@
+@(signUpForm: Form[SignUpData])(implicit request: RequestHeader, messagesProvider: MessagesProvider)
+
+@main("Welcome to Quizzy Peasy !") {
+    @defining(play.core.PlayVersion.current) { version =>
+
+        <section id="top">
+            <div class="wrapper">
+                <h1><a href="https://playframework.com/documentation/@version/Home"></a></h1>
+            </div>
+        </section>
+
+        <!-- from https://codepen.io/trangsihung/pen/zbwGx-->
+        <div class="form-wrap">
+            <div class="tabs">
+                <h3 class="signup-tab"><a class="active" href="#signup-tab-content">Sign Up</a></h3>
+            </div><!--.tabs-->
+
+            <div class="tabs-content">
+                @helper.form(action = routes.AuthentificationController.signUp(), args = 'class -> "signup-form") {
+                    @helper.CSRF.formField
+                    @helper.inputText(signUpForm("user_name"), '_label -> "Username", 'class -> "input", 'autocomplete -> "off", 'placeholder -> "Username")
+                    @helper.inputPassword(signUpForm("user_pass"), '_label -> "Password",'class -> "input", 'class -> "input", 'autocomplete -> "off", 'placeholder -> "Password")
+                    <input type="submit" class="button" value="Sign Up">
+                }<!--.login-form-->
+                <div class="help-text">
+                    <p>By signing up, you agree to our</p>
+                    <p><a href="#">Terms of service</a></p>
+                </div><!--.help-text-->
+            </div><!--.tabs-content-->
+        </div><!--.form-wrap-->
+    }
+}

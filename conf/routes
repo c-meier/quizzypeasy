@@ -6,10 +6,12 @@
 # An example controller showing a sample home page
 GET     /                           controllers.HomeController.index
 # A controller allowing login or sign-up
-GET     /login                      controllers.AuthentificationController.login
-GET     /authenticate               controllers.AuthentificationController.authenticate
-GET     /signup                     controllers.AuthentificationController.signUp
+GET     /login                      controllers.AuthentificationController.loginPage
+POST    /login                      controllers.AuthentificationController.login
+GET     /signup                     controllers.AuthentificationController.signUpPage
+POST    /signup                     controllers.AuthentificationController.signUp
 GET     /logout                     controllers.AuthentificationController.logout
+
 # An example controller showing how to use dependency injection
 GET     /count                      controllers.CountController.count
 # An example controller showing how to write asynchronous code

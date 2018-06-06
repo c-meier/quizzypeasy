@@ -1,12 +1,18 @@
 package controllers
 
+import java.time.LocalDateTime
+
+import dao.UsersDAO
 import javax.inject._
-import play.api.mvc._
 import models.{LoginData, SignUpData}
-import play.api.data._
 import play.api.data.Forms._
+import play.api.data._
 import play.api.data.validation.Constraints._
 import play.api.i18n.I18nSupport
+import play.api.mvc._
+
+import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent.Future
 
 
 /**
@@ -14,13 +20,13 @@ import play.api.i18n.I18nSupport
  * application's login page.
  */
 @Singleton
-class AuthentificationController @Inject()(val cc: ControllerComponents) extends AbstractController(cc) with I18nSupport {
+class AuthentificationController @Inject()(cc: ControllerComponents, usersDAO: UsersDAO) extends AbstractController(cc) with I18nSupport {
 
   val loginForm = Form(
     mapping(
       "user_login" -> text.verifying(pattern("""[a-zA-Z0-9_-]+""".r)) ,
       "user_pass" -> nonEmptyText,
-      "remeber_me" -> boolean
+      "remember_me" -> boolean
     )(LoginData.apply)(LoginData.unapply)
   )
 
@@ -31,34 +37,52 @@ class AuthentificationController @Inject()(val cc: ControllerComponents) extends
     )(SignUpData.apply)(SignUpData.unapply)
   )
 
-  def login = Action { implicit request =>
-    Ok(views.html.login(loginForm, signUpForm))
+  def loginPage = Action { implicit request =>
+    Ok(views.html.login(loginForm))
   }
 
-  def signUp = Action { implicit request =>
+  def signUpPage = Action { implicit request =>
+    Ok(views.html.signup(signUpForm))
+  }
+
+  def signUp = Action.async { implicit request =>
     signUpForm.bindFromRequest.fold(
       formWithErrors => {
-        BadRequest(views.html.login(loginForm, formWithErrors))
+        Future {
+          BadRequest(views.html.signup(formWithErrors))
+        }
       },
-      signUpInput => {
-        Redirect(routes.HomeController.index())
+      uData => {
+        val optU = usersDAO.insert(models.User(None, uData.username, uData.password, LocalDateTime.now(), false))
+        optU map {
+          case u => Redirect(routes.HomeController.index()).withSession("connected" -> u.name)
+          case _ => BadRequest(views.html.signup(signUpForm.fill(uData)))
+        }
+      }
+    )
+  }
+
+  def login = Action.async { implicit request =>
+    loginForm.bindFromRequest.fold(
+      formWithErrors => {
+        Future {
+          BadRequest(views.html.login(formWithErrors))
+        }
+      },
+      uData => {
+        val optU = usersDAO.findByName(uData.username)
+        optU.map{
+          case Some(u) if u.password == uData.password =>
+            Redirect(routes.HomeController.index()).withSession("connected" -> u.name)
+          case _ =>
+            BadRequest(views.html.login(loginForm.fill(uData)))
+        }
       }
     )
   }
 
   def logout = Action { implicit request =>
-    Redirect(routes.HomeController.index())
-  }
-
-  def authenticate = Action { implicit request =>
-    loginForm.bindFromRequest.fold(
-      formWithErrors => {
-        BadRequest(views.html.login(formWithErrors, signUpForm))
-      },
-      loginInput => {
-        Redirect(routes.HomeController.index())
-      }
-    )
+    Redirect(routes.HomeController.index()).withNewSession
   }
 
 }

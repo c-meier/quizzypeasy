@@ -6,7 +6,7 @@ CREATE TABLE users (
   id_user INT(11) AUTO_INCREMENT NOT NULL,
   user_name VARCHAR(45) NOT NULL,
   password VARCHAR(255) NOT NULL,
-  date_inscription DATE NOT NULL,
+  date_inscription TIMESTAMP NOT NULL,
   is_admin BOOLEAN NOT NULL,
   PRIMARY KEY (id_user)
 );

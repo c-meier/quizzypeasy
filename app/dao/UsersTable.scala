@@ -1,27 +1,32 @@
 package dao
 
 
-import java.sql.Date
+import java.sql.Timestamp
+import java.time.LocalDateTime
 
 import javax.inject.{Inject, Singleton}
-import play.api.db.slick.DatabaseConfigProvider
-import play.api.db.slick.HasDatabaseConfigProvider
+import models.{Quiz, User}
+import play.api.db.slick.{DatabaseConfigProvider, HasDatabaseConfigProvider}
 import slick.jdbc.JdbcProfile
 
 import scala.concurrent.{ExecutionContext, Future}
-import models.{Quiz, User}
 
 trait UsersComponent {
   self: HasDatabaseConfigProvider[JdbcProfile] =>
 
   import profile.api._
 
+  implicit lazy val localDateToDate = MappedColumnType.base[LocalDateTime, Timestamp](
+    l => Timestamp.valueOf(l),
+    d => d.toLocalDateTime()
+  )
+
   // This class convert the database's user table in a object-oriented entity: the User model.
   class UsersTable(tag: Tag) extends Table[User](tag, "users") {
     def id = column[Long]("id_user", O.PrimaryKey, O.AutoInc) // Primary key, auto-incremented
     def name = column[String]("user_name")
     def password = column[String]("password")
-    def dateInscription = column[Date]("date_inscription")
+    def dateInscription = column[LocalDateTime]("date_inscription")
     def isAdmin = column[Boolean]("is_admin")
 
     // Map the attributes with the model; the ID is optional.

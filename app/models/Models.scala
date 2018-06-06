@@ -1,6 +1,6 @@
 package models
 
-import java.sql.Date
+import java.time.LocalDateTime
 
 import models.QuestionType.QuestionType
 
@@ -8,7 +8,7 @@ case class User(
                  id: Option[Long],
                  name: String,
                  password: String,
-                 dateInscription: Date,
+                 dateInscription: LocalDateTime,
                  isAdmin: Boolean)
 
 case class Quiz(
