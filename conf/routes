@@ -12,6 +12,10 @@ GET     /signup                     controllers.AuthentificationController.signU
 POST    /signup                     controllers.AuthentificationController.signUp
 GET     /logout                     controllers.AuthentificationController.logout
 
+GET     /quizzes/do/:id/:q          controllers.QuizController.quizQuestion(id: Long, q: Long)
+POST    /quizzes/do/:id/:q          controllers.QuizController.quizAnswer(id: Long, q: Long)
+GET     /quizzes/review/:id         controllers.QuizController.quizReview(id: Long)
+
 # An example controller showing how to use dependency injection
 GET     /count                      controllers.CountController.count
 # An example controller showing how to write asynchronous code
