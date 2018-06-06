@@ -17,6 +17,13 @@
 
             <div class="tabs-content">
                 @helper.form(action = routes.AuthentificationController.login(), args = 'class -> "login-form") {
+                    @if(loginForm.hasGlobalErrors) {
+                        <ul>
+                        @for(error <- loginForm.globalErrors) {
+                            <li>@error.format</li>
+                        }
+                        </ul>
+                    }
                     @helper.CSRF.formField
                     @helper.inputText(loginForm("user_login"), '_label -> "Username", 'class -> "input", 'autocomplete -> "off", 'placeholder -> "Username")
                     @helper.inputPassword(loginForm("user_pass"), '_label -> "Password",'class -> "input", 'autocomplete -> "off", 'placeholder -> "Password")

@@ -75,7 +75,8 @@ class AuthentificationController @Inject()(cc: ControllerComponents, usersDAO: U
           case Some(u) if u.password == uData.password =>
             Redirect(routes.HomeController.index()).withSession("connected" -> u.name)
           case _ =>
-            BadRequest(views.html.login(loginForm.fill(uData)))
+            val errorForm = loginForm.fill(uData).withGlobalError("Username or password are not valid !")
+            BadRequest(views.html.login(errorForm))
         }
       }
     )
