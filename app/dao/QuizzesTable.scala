@@ -16,9 +16,9 @@ trait QuizzesComponent {
   // This class convert the database's user table in a object-oriented entity: the User model.
   class QuizzesTable(tag: Tag) extends Table[Quiz](tag, "quizzes") {
     def id = column[Long]("id_quiz", O.PrimaryKey, O.AutoInc) // Primary key, auto-incremented
-    def score = column[Option[Int]]("score")
+    def score = column[Int]("score")
     def categoryId = column[Long]("category_id")
-    def userId = column[Option[Long]]("user_id")
+    def userId = column[Long]("user_id")
 
     // Map the attributes with the model; the ID is optional.
     def * = (id.?, score, categoryId, userId) <> (Quiz.tupled, Quiz.unapply)
@@ -37,4 +37,15 @@ class QuizzesDAO @Inject()(protected val dbConfigProvider: DatabaseConfigProvide
 
   // Get the object-oriented list of courses directly from the query table.
   val quizzes = TableQuery[QuizzesTable]
+
+  def list(): Future[Seq[Quiz]] = {
+    val query = quizzes.sortBy(_.categoryId)
+    db.run(query.result)
+  }
+
+  /**Insert a new quiz**/
+  def insert(quiz: Quiz): Future[Quiz] = {
+    val query = quizzes returning quizzes.map(_.id) into ((quiz,id)=> quiz.copy(Some(id)))
+    db.run(query += quiz)
+  }
 }

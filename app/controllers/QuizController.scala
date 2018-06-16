@@ -2,9 +2,10 @@ package controllers
 
 import java.time.LocalDateTime
 
-import dao.UsersDAO
+import dao.{QuestionsDAO, QuizzesDAO, UsersDAO}
 import javax.inject._
-import models.{LoginData, QuizAnswerData, SignUpData}
+
+import models._
 import play.api.data.Forms._
 import play.api.data._
 import play.api.data.validation.Constraints._
@@ -12,7 +13,7 @@ import play.api.i18n.I18nSupport
 import play.api.mvc._
 
 import scala.concurrent.ExecutionContext.Implicits.global
-import scala.concurrent.Future
+import scala.concurrent.{Await, Future}
 
 
 /**
@@ -20,7 +21,7 @@ import scala.concurrent.Future
  * application's login page.
  */
 @Singleton
-class QuizController @Inject()(cc: ControllerComponents, usersDAO: UsersDAO) extends AbstractController(cc) with I18nSupport {
+class QuizController @Inject()(cc: ControllerComponents, usersDAO: UsersDAO, quizzesDAO: QuizzesDAO, questionsDAO: QuestionsDAO) extends AbstractController(cc) with I18nSupport {
 
   val quizAnswerForm = Form(
     mapping(
@@ -29,7 +30,7 @@ class QuizController @Inject()(cc: ControllerComponents, usersDAO: UsersDAO) ext
     )(QuizAnswerData.apply)(QuizAnswerData.unapply)
   )
 
-  def quizQuestion(id: Long, q: Long) = Action { implicit request =>
+  /*def quizQuestion(id: Long, q: Long) = Action { implicit request =>
     Ok(views.html.quiz(quizAnswerForm))
   }
   def quizReview(id: Long) = Action { implicit request =>
@@ -51,5 +52,46 @@ class QuizController @Inject()(cc: ControllerComponents, usersDAO: UsersDAO) ext
         }
       }
     )
+  }*/
+
+  def create(categoryId: Long) = Action.async { implicit request =>
+    val user: Future[Option[User]] = {
+      val session = request.session.get("connected")
+
+      if (session.isEmpty)
+        Future.failed(new RuntimeException("User not found !"))
+      else {
+        val user = usersDAO.findByName(session.get)
+        for {
+          u <- user
+          if u.isDefined
+        } yield u
+      }
+    }
+
+    user flatMap {
+      case Some(u) =>
+        NewQuizForm.form.bindFromRequest.fold(
+          formWithErrors => {
+            val quizzes = quizzesDAO.list()
+            for {
+              q <- quizzes
+            } yield {
+              BadRequest(views.html.quizzes("Error while creating the quiz"))
+            }
+
+          },
+          formData => {
+            Future {
+              val newQuiz = Quiz(None, 0, categoryId, u.id.get)
+              val quiz = quizzesDAO.insert(newQuiz)
+              val questions = questionsDAO.getQuestions(categoryId)
+              Ok(views.html.quiz(questions))
+            }
+          }
+        )
+      case None => Future.successful(Unauthorized("You are not connected"))
+    }
   }
+
 }

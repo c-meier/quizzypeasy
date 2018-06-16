@@ -19,10 +19,9 @@ trait PossibleAnswerComponent {
   class PossibleAnswersTable(tag: Tag) extends Table[PossibleAnswer](tag, "possible_answers") {
     def id = column[Long]("id_possible_answer", O.PrimaryKey, O.AutoInc) // Primary key, auto-incremented
     def value = column[String]("value")
-    def questionId = column[Option[Long]]("questionId")
 
     // Map the attributes with the model; the ID is optional.
-    def * = (id.?, value, questionId) <> (PossibleAnswer.tupled, PossibleAnswer.unapply)
+    def * = (id.?, value) <> (PossibleAnswer.tupled, PossibleAnswer.unapply)
   }
 
 }

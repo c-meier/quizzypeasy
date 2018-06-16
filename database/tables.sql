@@ -36,9 +36,7 @@ CREATE TABLE questions (
   name VARCHAR(255) NOT NULL,
   content VARCHAR(255) NOT NULL,
   questionType INT NOT NULL,
-  correct_answer_id INT(11) NOT NULL,
-  PRIMARY KEY (id_question),
-  FOREIGN KEY (correct_answer_id) REFERENCES answers(id_answer)
+  PRIMARY KEY (id_question)
 );
 
 DROP TABLE IF EXISTS answers;
@@ -67,8 +65,17 @@ DROP TABLE IF EXISTS possible_answers;
 CREATE TABLE possible_answers (
   id_possible_answer INT(11) AUTO_INCREMENT NOT NULL,
   value VARCHAR(255) NOT NULL,
-  questionId INT(11) NOT NULL,
-  PRIMARY KEY (id_possible_answer),
-  FOREIGN KEY (questionId) REFERENCES questions(id_question)
+  PRIMARY KEY (id_possible_answer)
+);
+
+DROP TABLE IF EXISTS answers_question;
+CREATE TABLE answers_question (
+  id_answers_question INT(11) AUTO_INCREMENT NOT NULL,
+  id_answers INT(11) NOT NULL,
+  id_question INT(11) NOT NULL,
+  correct_answer bool NOT NULL,
+  PRIMARY KEY (id_answers_question),
+  FOREIGN KEY (id_answers) REFERENCES possible_answers(id_possible_answer),
+  FOREIGN KEY (id_question) REFERENCES questions(id_question)
 );
 SET FOREIGN_KEY_CHECKS=1;

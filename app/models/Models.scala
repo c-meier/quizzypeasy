@@ -11,13 +11,6 @@ case class User(
                  dateInscription: LocalDateTime,
                  isAdmin: Boolean)
 
-case class Quiz(
-               id: Option[Long],
-               score: Option[Int],
-               categoryId: Long,
-               userId: Option[Long]
-               )
-
 case class Category(
                    id: Option[Long],
                    name: String,
@@ -28,14 +21,12 @@ case class Question(
                    id: Option[Long],
                    name: String,
                    content: String,
-                   questionType: QuestionType,
-                   correctAnswerId: Long
+                   questionType: QuestionType
                    )
 
 case class PossibleAnswer(
                            id: Option[Long],
-                           value: String,
-                           questionId: Option[Long]
+                           value: String
                          )
 
 case class Answer(
@@ -48,6 +39,20 @@ case class Answer(
 
 case class QuestionCategory(id: Option[Long],
                             questionId: Long,
-                            categoryId: Long)
+                            categoryId: Long
+                           )
+
+case class AnswersQuestion(id: Option[Long],
+                           answerId: Long,
+                           questionId: Long,
+                           correctAnswer: Boolean
+                          )
+
+case class Quiz(
+                 id: Option[Long],
+                 score: Int,
+                 categoryId: Long,
+                 userId: Long
+               )
 
 

@@ -1,4 +1,4 @@
-@(message: String, style: String = "scala")
+@(message: String, style: String = "scala")(implicit request: RequestHeader, messagesProvider: MessagesProvider)
 @defining(play.core.PlayVersion.current) { version =>
     <div class="content">
         <!--from https://codepen.io/maheshambure21/pen/bNXXeM/-->
@@ -9,7 +9,7 @@
                 <figcaption>
                     <h2><span></span></h2>
                     <p>If I were to pick another language to use today other than Java, it would be SCALA - James Gosling</p>
-                    <a href="@quiz("Let's go !")">View more</a>
+                    <a href=@routes.QuizController.create(2)>View more</a>
                 </figcaption>
             </figure>
             <figure class="effect-img">
@@ -17,7 +17,7 @@
                 <figcaption>
                     <h2><span></span></h2>
                     <p>There is always better...</p>
-                    <a href="@quiz("Let's go !")">View more</a>
+                    <a href=@routes.QuizController.create(1)>View more</a>
                 </figcaption>
             </figure>
         </div>
