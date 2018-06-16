@@ -4,8 +4,8 @@ INSERT INTO users (user_name, password, date_inscription, is_admin) VALUES
   ('daniel','daniel',now(),TRUE);
 
 INSERT INTO categories (id_category, category_name, description) VALUES
-  (1,'heig-vd','Question about the HEIG-VD'),
-  (2,'scala','Question about SCALA language');
+  (1,'heig-vd','There is always better...'),
+  (2,'scala','If I were to pick another language to use today other than Java, it would be SCALA - James Gosling');
 
 /**
   questionType :

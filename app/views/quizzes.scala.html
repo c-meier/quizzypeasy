@@ -5,27 +5,18 @@
     <h2>School</h2>
     <div class="grid">
         @for(c <- categories) {
-            @helper.form(action = routes.QuizController.create(c.id.get)) {
-                @helper.CSRF.formField
-                <input type="submit" value="@c.name" />
+
+            @helper.form(action = routes.QuizController.create(c.id.get), args = 'id -> {"myForm" + c.id.get}) {
+                <figure class="effect-img">
+                    <img src="@routes.Assets.versioned("/images/" + c.id.get + ".png")" height="213.15px" alt="@c.name"/>
+                    <figcaption>
+                        <h2><span></span></h2>
+                        <p>@c.description</p>
+                        @helper.CSRF.formField
+                        <a href=# onclick="document.getElementById('myForm' + @c.id.get).submit()">View more</a>
+                    </figcaption>
+                </figure>
             }
         }
-
-        <!--<figure class="effect-img">
-            <img src="@routes.Assets.versioned("images/scala2.png")" alt="scala"/>
-            <figcaption>
-                <h2><span></span></h2>
-                <p>If I were to pick another language to use today other than Java, it would be SCALA - James Gosling</p>
-                <a href=@routes.QuizController.create(2)>View more</a>
-            </figcaption>
-        </figure>
-        <figure class="effect-img">
-            <img src="@routes.Assets.versioned("images/heigvd2.png")" height="213.15px" alt="hesso"/>
-            <figcaption>
-                <h2><span></span></h2>
-                <p>There is always better...</p>
-                <a href=@routes.QuizController.create(1)>View more</a>
-            </figcaption>
-        </figure>-->
     </div>
 </div>
