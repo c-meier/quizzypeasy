@@ -10,6 +10,8 @@ import play.api.data._
 import play.api.data.validation.Constraints._
 import play.api.i18n.I18nSupport
 import play.api.mvc._
+import org.mindrot.jbcrypt.BCrypt
+
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
@@ -53,7 +55,8 @@ class AuthentificationController @Inject()(cc: ControllerComponents, usersDAO: U
         }
       },
       uData => {
-        val optU = usersDAO.insert(models.User(None, uData.username, uData.password, LocalDateTime.now(), false))
+        val passHash = BCrypt.hashpw(uData.password, BCrypt.gensalt)
+        val optU = usersDAO.insert(models.User(None, uData.username, passHash, LocalDateTime.now(), false))
         optU map {
           case u => Redirect(routes.HomeController.index()).withSession("connected" -> u.name)
           case _ => BadRequest(views.html.signup(signUpForm.fill(uData)))
@@ -72,7 +75,7 @@ class AuthentificationController @Inject()(cc: ControllerComponents, usersDAO: U
       uData => {
         val optU = usersDAO.findByName(uData.username)
         optU.map{
-          case Some(u) if u.password == uData.password =>
+          case Some(u) if BCrypt.checkpw(uData.password,u.password) =>
             Redirect(routes.HomeController.index()).withSession("connected" -> u.name)
           case _ =>
             val errorForm = loginForm.fill(uData).withGlobalError("Username or password are not valid !")

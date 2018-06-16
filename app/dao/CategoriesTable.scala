@@ -39,6 +39,11 @@ class CategoriesDAO @Inject()(protected val dbConfigProvider: DatabaseConfigProv
   // Get the object-oriented list of courses directly from the query table.
   val categories = TableQuery[CategoriesTable]
 
+  def list(): Future[Seq[Category]] = {
+    val query = categories.sortBy(_.name)
+    db.run(query.result)
+  }
+
   def findByName(name: String): Future[Option[Category]] = {
     db.run(categories.filter(_.name === name).result.headOption)
   }
