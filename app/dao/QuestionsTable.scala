@@ -1,14 +1,13 @@
 package dao
 
 import javax.inject.{Inject, Singleton}
-
 import models.QuestionType.QuestionType
 import play.api.db.slick.DatabaseConfigProvider
 import play.api.db.slick.HasDatabaseConfigProvider
 import slick.jdbc.JdbcProfile
 
 import scala.concurrent.{ExecutionContext, Future}
-import models.{Question, QuestionType, Quiz, User}
+import models._
 
 trait QuestionsComponent {
   self: HasDatabaseConfigProvider[JdbcProfile] =>
@@ -32,12 +31,16 @@ trait QuestionsComponent {
 
 @Singleton
 class QuestionsDAO @Inject()(protected val dbConfigProvider: DatabaseConfigProvider)(implicit executionContext: ExecutionContext)
-  extends HasDatabaseConfigProvider[JdbcProfile] with QuestionsComponent with CategoriesComponent with QuestionCategoriesComponent {
+  extends HasDatabaseConfigProvider[JdbcProfile]
+    with QuestionsComponent with CategoriesComponent with QuestionCategoriesComponent
+    with AnswersQuestionComponent with PossibleAnswerComponent {
   import profile.api._
 
   val questions = TableQuery[QuestionsTable]
   val categories = TableQuery[CategoriesTable]
   val questionCategory = TableQuery[QuestionCategoriesTable]
+  val answersQuestion = TableQuery[AnswersQuestionTable]
+  val possibleAnswers = TableQuery[PossibleAnswersTable]
 
   def getQuestions(category: Long): Future[Seq[Question]] = {
     val randRow = SimpleFunction.nullary[Double]("rand")
@@ -46,6 +49,14 @@ class QuestionsDAO @Inject()(protected val dbConfigProvider: DatabaseConfigProvi
       question <- questions if question.id === questioncategory.id
     } yield question
     query.sortBy(x=>randRow).take(2)
+    db.run(query.result)
+  }
+
+  def getPossibleAnswers(question: Long): Future[Seq[(PossibleAnswer, AnswersQuestion)]] = {
+    val query = for {
+      aq <- answersQuestion if aq.questionId === question
+      pa <- possibleAnswers if pa.id === aq.answerId
+    } yield (pa, aq)
     db.run(query.result)
   }
 }

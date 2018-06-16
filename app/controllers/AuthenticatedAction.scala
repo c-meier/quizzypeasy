@@ -29,7 +29,7 @@ class AuthenticatedAction @Inject()(val parser: BodyParsers.Default, usersDAO: U
           if u.isDefined
         } yield u
         user.map[AuthenticatedRequest[A]](_ match {
-          case Some(User(Some(id), name, _, _ , isAdmin)) => {
+          case Some(User(Some(id), name, _, _, isAdmin)) => {
             val userInfo = (id, name, isAdmin)
             new AuthenticatedRequest(Some(userInfo), request)
           }
@@ -41,6 +41,7 @@ class AuthenticatedAction @Inject()(val parser: BodyParsers.Default, usersDAO: U
 
   def PermissionCheckAction(implicit ec: ExecutionContext) = new ActionFilter[AuthenticatedRequest] {
     def executionContext = ec
+
     def filter[A](input: AuthenticatedRequest[A]) = Future.successful {
       if (input.userInfo.isEmpty)
         Some(Forbidden("hello world"))

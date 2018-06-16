@@ -38,6 +38,9 @@
                     }
                 </ul>
             </nav>
+            @request.flash.get("info").map(i => {
+                <div class="info">@i</div>
+            })
         </section>
 
         @* And here's where we render the `Html` object containing

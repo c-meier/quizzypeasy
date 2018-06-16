@@ -22,34 +22,56 @@ import scala.concurrent.{Await, Future}
  */
 @Singleton
 class QuizController @Inject()(cc: ControllerComponents, authenticatedAction: AuthenticatedAction, usersDAO: UsersDAO, quizzesDAO: QuizzesDAO, questionsDAO: QuestionsDAO, answersDAO: AnswersDAO) extends AbstractController(cc) with I18nSupport {
-
   val quizAnswerForm = Form(
     mapping(
+      "id" -> longNumber,
       "answer" -> text,
-      "is_final" -> boolean
     )(QuizAnswerData.apply)(QuizAnswerData.unapply)
   )
 
-  def quizQuestion(id: Long, q: Long) = Action.async { implicit request =>
-    request.session.get("connected") match {
-      case Some(u) =>
-        for {
-          u <- usersDAO.findByName(u)
-          t <-
-            if (u.isDefined) answersDAO.getQuestionsAndAnswers(id)
-            else Future.successful(Seq.empty)
-        } yield {
-          if (u.isEmpty) Unauthorized("You ar not connected")
-          else {
-            val list: Seq[(Question, Answer)] = t.map(x => (x._2, x._3))
-            Ok(views.html.quiz(list))
+  def quizQuestion(id: Long, q: Long) = authenticatedAction.andThen(authenticatedAction.PermissionCheckAction).async { implicit request =>
+    for {
+      curQuestionOpt@Some((cat, quiz, quest, ans)) <- answersDAO.getQuestionAndAnswer(id, q) if curQuestionOpt.isDefined
+      possibleAnswers <- questionsDAO.getPossibleAnswers(quest.id.get)
+      allAnswers <- answersDAO.getQuizAnswers(id)
+    } yield {
+      val answerForm = quizAnswerForm.fill(QuizAnswerData(ans.id.get, ans.userAnswer))
+      Ok(views.html.quiz(answerForm, FullQuizzQuestion(cat, quiz, quest, ans, possibleAnswers.map(t => (t._1, t._2.correctAnswer))), allAnswers))
+    }
+  }
+
+  def skipToQuizQuestion(id: Long, q: Long) = authenticatedAction.andThen(authenticatedAction.PermissionCheckAction).async { implicit request =>
+    val redirect = Redirect(routes.QuizController.quizQuestion(id, q))
+    quizAnswerForm.bindFromRequest.fold(
+      formWithErrors => {
+        Future {
+          redirect.flashing("info" -> "The answer to the last question has not been saved because there was an error")
+        }
+      },
+      aData => {
+        answersDAO.getQuizAnswer(id, aData.id).flatMap{
+          case Some(a) =>
+            if(a.isFinal){
+              Future {
+                redirect.flashing("info" -> "The answer to the last question can't be modified")
+              }
+            }
+            else{
+              answersDAO.update(Answer(a.id, aData.answer, false, a.questionId, a.quizId)).map{
+                case 0 => redirect.flashing("info" -> "Could not update last question")
+                case _ => redirect
+              }
+            }
+          case None => Future{
+            redirect.flashing("info" -> "The answer to the last question does not match the quizz")
           }
         }
-      case None => Future {
-        Unauthorized("You are not connected")
       }
-    }
+    )
+  }
 
+  def submitQuizQuestion(id: Long) = authenticatedAction.andThen(authenticatedAction.PermissionCheckAction).async { implicit request =>
+    Future.successful(NotImplemented("Not yet submit " + id))
   }
 
   /*

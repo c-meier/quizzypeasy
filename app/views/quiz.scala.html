@@ -1,14 +1,33 @@
-@(quizQuestionAnswer: Seq[(Question, Answer)])(implicit request: RequestHeader, messagesProvider: MessagesProvider)
+@(quizAnswerForm: Form[QuizAnswerData], curQuestion: FullQuizzQuestion, allAnswers: Seq[Answer])(implicit request: RequestHeader, messagesProvider: MessagesProvider)
 @main("Quiz") {
-    <div>
-        <table>
-            <tbody>
-                @for(question <- quizQuestionAnswer) {
-                    <tr>
-                        <td>@question._1.name</td>
-                    </tr>
+    @helper.form(action = routes.QuizController.submitQuizQuestion(curQuestion.userAnswer.quizId)) {
+        @helper.CSRF.formField
+        @*Current question*@
+        <div>
+            <div>@curQuestion.question.name</div>
+            <div>@curQuestion.question.content</div>
+            @if(curQuestion.userAnswer.isFinal) {
+                <div>The correct response...</div>
+            } else {
+                @helper.input(quizAnswerForm("id")) { (id, name, value, args) =>
+                    <input type="hidden" name="@name" id="@id" value="@value" @toHtmlArgs(args)>
                 }
-            </tbody>
-        </table>
-    </div>
+                @helper.inputText(quizAnswerForm("answer"), '_label -> "Answer", 'class -> "input", 'autocomplete -> "off", 'placeholder -> "Your answer")
+                <input type="submit" value="Check" />
+            }
+        </div>
+
+        @*Link to the other questions*@
+        <div>
+            @for((q, i) <- allAnswers.zipWithIndex) {
+                <input
+                    type="submit"
+                    value="@{i + 1}"
+                    class="@{if(q.isFinal) "final" else "in_progress"}"
+                    @if(q.id.get == curQuestion.userAnswer.id.get){ disabled="true" }
+                    formaction="@routes.QuizController.skipToQuizQuestion(q.quizId, q.id.get)"
+                />
+            }
+        </div>
+    }
 }

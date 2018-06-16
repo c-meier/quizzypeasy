@@ -34,13 +34,15 @@ trait AnswersComponent {
 // configuration file.
 @Singleton
 class AnswersDAO @Inject()(protected val dbConfigProvider: DatabaseConfigProvider)(implicit executionContext: ExecutionContext)
-  extends HasDatabaseConfigProvider[JdbcProfile] with AnswersComponent with QuizzesComponent with QuestionsComponent {
+  extends HasDatabaseConfigProvider[JdbcProfile]
+    with AnswersComponent with QuizzesComponent with QuestionsComponent with CategoriesComponent {
   import profile.api._
 
   // Get the object-oriented list of courses directly from the query table.
   val answers = TableQuery[AnswersTable]
   val quizzes = TableQuery[QuizzesTable]
   val questions = TableQuery[QuestionsTable]
+  val categories = TableQuery[CategoriesTable]
 
   def getQuestionsAndAnswers(quizId: Long): Future[Seq[(Quiz, Question, Answer)]] = {
     val questionAnswer = for {
@@ -49,6 +51,28 @@ class AnswersDAO @Inject()(protected val dbConfigProvider: DatabaseConfigProvide
       qs <- questions if as.questionId === qs.id
     } yield (quiz, qs, as)
     db.run(questionAnswer.result)
+  }
+
+  def getQuestionAndAnswer(quizId: Long, answerId: Long): Future[Option[(Category, Quiz, Question, Answer)]] = {
+    val questionAnswer = for {
+      as <- answers if as.id === answerId && as.quizId === quizId
+      quiz <- quizzes if quiz.id === quizId
+      cat <- categories if cat.id === quiz.categoryId
+      qs <- questions if qs.id === as.questionId
+    } yield (cat, quiz, qs, as)
+    db.run(questionAnswer.result.headOption)
+  }
+
+  def getQuizAnswer(quizId: Long, answerId: Long): Future[Option[Answer]] = {
+    val answer = for {
+      as <- answers if as.id === answerId && as.quizId === quizId
+    } yield as
+    db.run(answer.result.headOption)
+  }
+
+  def update(answer: Answer): Future[Int] = {
+    val query = answers.insertOrUpdate(answer)
+    db.run(query)
   }
 
   def getQuizAnswers(quizId: Long): Future[Seq[Answer]] = {
