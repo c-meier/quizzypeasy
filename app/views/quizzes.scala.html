@@ -4,6 +4,10 @@
         <!--from https://codepen.io/maheshambure21/pen/bNXXeM/-->
     <h2>School</h2>
     <div class="grid">
+        @helper.form(action = routes.QuizController.create(2)) {
+            @helper.CSRF.formField
+            <input type="submit" value="SCALA" />
+        }
         <figure class="effect-img">
             <img src="@routes.Assets.versioned("images/scala2.png")" alt="scala"/>
             <figcaption>

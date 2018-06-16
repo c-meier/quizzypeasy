@@ -15,7 +15,7 @@ trait QuestionsComponent {
 
   import profile.api._
 
-  implicit val questionTypeMapper = MappedColumnType.base[QuestionType, Int](
+  implicit lazy val questionTypeMapper = MappedColumnType.base[QuestionType, Int](
     e => e.id,
     i => QuestionType.apply(i)
   )
@@ -45,7 +45,7 @@ class QuestionsDAO @Inject()(protected val dbConfigProvider: DatabaseConfigProvi
       questioncategory <- questionCategory if questioncategory.categoryId === category
       question <- questions if question.id === questioncategory.id
     } yield question
-    query.sortBy(x=>randRow).take(10)
+    query.sortBy(x=>randRow).take(2)
     db.run(query.result)
   }
 }

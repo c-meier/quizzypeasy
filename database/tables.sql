@@ -35,7 +35,7 @@ CREATE TABLE questions (
   id_question INT(11) AUTO_INCREMENT NOT NULL,
   name VARCHAR(255) NOT NULL,
   content VARCHAR(255) NOT NULL,
-  questionType INT NOT NULL,
+  question_type INT NOT NULL,
   PRIMARY KEY (id_question)
 );
 

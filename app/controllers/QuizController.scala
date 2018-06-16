@@ -4,12 +4,12 @@ import java.time.LocalDateTime
 
 import dao.{AnswersDAO, QuestionsDAO, QuizzesDAO, UsersDAO}
 import javax.inject._
-
 import models._
 import play.api.data.Forms._
 import play.api.data._
 import play.api.data.validation.Constraints._
 import play.api.i18n.I18nSupport
+import play.api.libs.typedmap.TypedKey
 import play.api.mvc._
 
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -21,7 +21,7 @@ import scala.concurrent.{Await, Future}
  * application's login page.
  */
 @Singleton
-class QuizController @Inject()(cc: ControllerComponents, usersDAO: UsersDAO, quizzesDAO: QuizzesDAO, questionsDAO: QuestionsDAO, answersDAO: AnswersDAO) extends AbstractController(cc) with I18nSupport {
+class QuizController @Inject()(cc: ControllerComponents, authenticatedAction: AuthenticatedAction, usersDAO: UsersDAO, quizzesDAO: QuizzesDAO, questionsDAO: QuestionsDAO, answersDAO: AnswersDAO) extends AbstractController(cc) with I18nSupport {
 
   val quizAnswerForm = Form(
     mapping(
@@ -74,47 +74,15 @@ class QuizController @Inject()(cc: ControllerComponents, usersDAO: UsersDAO, qui
     )
   }*/
 
-  def create(categoryId: Long) = Action.async { implicit request =>
-    val user: Future[Option[User]] = {
-      val session = request.session.get("connected")
+  def create(categoryId: Long) = authenticatedAction.andThen(authenticatedAction.PermissionCheckAction).async { implicit request =>
+    val answerFor = for {
+      quiz <- quizzesDAO.insert(Quiz(None, 0, categoryId, request.userInfo.get._1))
+      questions <- questionsDAO.getQuestions(categoryId)
+      a <- answersDAO.insertAll(for (q <- questions) yield Answer(None, "", false, q.id.get, quiz.id.get))
+    } yield a
 
-      if (session.isEmpty)
-        Future.failed(new RuntimeException("User not found !"))
-      else {
-        val user = usersDAO.findByName(session.get)
-        for {
-          u <- user
-          if u.isDefined
-        } yield u
-      }
-    }
-
-    user flatMap {
-      case Some(u) =>
-        NewQuizForm.form.bindFromRequest.fold(
-          formWithErrors => {
-            val quizzes = quizzesDAO.list()
-            for {
-              q <- quizzes
-            } yield {
-              BadRequest(views.html.index("Error while creating the quiz"))
-            }
-
-          },
-          formData => {
-              val answerFor = for {
-                quiz <- quizzesDAO.insert(Quiz(None, 0, categoryId, u.id.get))
-                questions <- questionsDAO.getQuestions(categoryId)
-                a <- answersDAO.insertAll(for (q <- questions) yield Answer(None, "", false, q.id.get, quiz.id.get))
-              } yield a
-
-              answerFor map {
-                a => Redirect(routes.QuizController.quizQuestion(a.head.quizId, a.head.questionId))
-              }
-          }
-        )
-      case None => Future.successful(Unauthorized("You are not connected"))
+    answerFor map {
+      as => Redirect(routes.QuizController.quizQuestion(as.head.quizId, as.head.questionId))
     }
   }
-
 }
