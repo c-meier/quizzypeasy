@@ -32,7 +32,7 @@ trait QuestionCategoriesComponent extends QuizzesComponent with QuestionsCompone
 // configuration file.
 @Singleton
 class QuestionCategoriesDAO @Inject()(protected val dbConfigProvider: DatabaseConfigProvider)(implicit executionContext: ExecutionContext)
-  extends QuestionCategoriesComponent with HasDatabaseConfigProvider[JdbcProfile] {
+  extends HasDatabaseConfigProvider[JdbcProfile] with QuestionCategoriesComponent {
   import profile.api._
 
   // Get the object-oriented list of courses directly from the query table.

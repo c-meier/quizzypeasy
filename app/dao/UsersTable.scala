@@ -42,7 +42,7 @@ trait UsersComponent {
 // configuration file.
 @Singleton
 class UsersDAO @Inject()(protected val dbConfigProvider: DatabaseConfigProvider)(implicit executionContext: ExecutionContext)
-  extends UsersComponent with QuizzesComponent with HasDatabaseConfigProvider[JdbcProfile] {
+  extends HasDatabaseConfigProvider[JdbcProfile] with UsersComponent with QuizzesComponent {
   import profile.api._
 
   // Get the object-oriented list of courses directly from the query table.

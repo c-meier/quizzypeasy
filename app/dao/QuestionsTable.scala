@@ -32,7 +32,7 @@ trait QuestionsComponent {
 
 @Singleton
 class QuestionsDAO @Inject()(protected val dbConfigProvider: DatabaseConfigProvider)(implicit executionContext: ExecutionContext)
-  extends QuestionsComponent with CategoriesComponent with QuestionCategoriesComponent with HasDatabaseConfigProvider[JdbcProfile] {
+  extends HasDatabaseConfigProvider[JdbcProfile] with QuestionsComponent with CategoriesComponent with QuestionCategoriesComponent {
   import profile.api._
 
   val questions = TableQuery[QuestionsTable]

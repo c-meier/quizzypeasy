@@ -33,7 +33,7 @@ trait CategoriesComponent {
 // configuration file.
 @Singleton
 class CategoriesDAO @Inject()(protected val dbConfigProvider: DatabaseConfigProvider)(implicit executionContext: ExecutionContext)
-  extends CategoriesComponent with HasDatabaseConfigProvider[JdbcProfile] {
+  extends HasDatabaseConfigProvider[JdbcProfile] with CategoriesComponent {
   import profile.api._
 
   // Get the object-oriented list of courses directly from the query table.

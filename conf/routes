@@ -15,7 +15,7 @@ GET     /logout                     controllers.AuthentificationController.logou
 GET     /quizzes/do/:id/:q          controllers.QuizController.quizQuestion(id: Long, q: Long)
 #POST    /quizzes/do/:id/:q          controllers.QuizController.quizAnswer(id: Long, q: Long)
 #GET     /quizzes/review/:id         controllers.QuizController.quizReview(id: Long)
-POST    /quizzes/create/:cid        controllers.QuizController.create(cid: Long)
+GET    /quizzes/create/:cid        controllers.QuizController.create(cid: Long)
 
 # An example controller showing how to use dependency injection
 GET     /count                      controllers.CountController.count

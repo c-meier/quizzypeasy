@@ -27,7 +27,7 @@ trait AnswersQuestionComponent extends QuestionsComponent with PossibleAnswerCom
 
 @Singleton
 class AnswersQuestionDAO @Inject()(protected val dbConfigProvider: DatabaseConfigProvider)(implicit executionContext: ExecutionContext)
-  extends AnswersQuestionComponent with HasDatabaseConfigProvider[JdbcProfile] {
+  extends HasDatabaseConfigProvider[JdbcProfile] with AnswersQuestionComponent {
   import profile.api._
 
   val answersQuestion = TableQuery[AnswersQuestionTable]
