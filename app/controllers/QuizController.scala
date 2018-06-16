@@ -74,8 +74,34 @@ class QuizController @Inject()(cc: ControllerComponents, authenticatedAction: Au
     )
   }
 
-  def submitQuizQuestion(id: Long) = authenticatedAction.andThen(authenticatedAction.PermissionCheckAction).async { implicit request =>
-    Future.successful(NotImplemented("Not yet submit " + id))
+  def submitQuizQuestion(id: Long, q: Long) = authenticatedAction.andThen(authenticatedAction.PermissionCheckAction).async { implicit request =>
+    val redirect = Redirect(routes.QuizController.quizQuestion(id, q))
+    quizAnswerForm.bindFromRequest.fold(
+      formWithErrors => {
+        Future {
+          redirect.flashing("info" -> "The answer to the question has not been saved because there was an error")
+        }
+      },
+      aData => {
+        answersDAO.getQuizAnswer(id, aData.id).flatMap{
+          case Some(a) =>
+            if(a.isFinal){
+              Future {
+                redirect.flashing("info" -> "The answer to the last question can't be modified")
+              }
+            }
+            else{
+              answersDAO.update(Answer(a.id, aData.answer, true, a.questionId, a.quizId)).map{
+                case 0 => redirect.flashing("info" -> "Could not update the question")
+                case _ => redirect
+              }
+            }
+          case None => Future{
+            redirect.flashing("info" -> "The answer to the question does not match the quizz")
+          }
+        }
+      }
+    )
   }
 
   /*

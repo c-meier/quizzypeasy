@@ -49,4 +49,9 @@ class QuizzesDAO @Inject()(protected val dbConfigProvider: DatabaseConfigProvide
     val query = quizzes returning quizzes.map(_.id) into ((quiz,id)=> quiz.copy(Some(id)))
     db.run(query += quiz)
   }
+
+  def update(quiz: Quiz): Future[Int] = {
+    val query = quizzes.insertOrUpdate(quiz)
+    db.run(query)
+  }
 }

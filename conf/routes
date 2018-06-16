@@ -13,7 +13,7 @@ POST    /signup                     controllers.AuthentificationController.signU
 GET     /logout                     controllers.AuthentificationController.logout
 
 GET     /quizzes/do/:id/:q          controllers.QuizController.quizQuestion(id: Long, q: Long)
-POST    /quizzes/do/:id             controllers.QuizController.submitQuizQuestion(id: Long)
+POST    /quizzes/do/:id/:q          controllers.QuizController.submitQuizQuestion(id: Long, q: Long)
 POST    /quizzes/skip/:id/:q        controllers.QuizController.skipToQuizQuestion(id: Long, q: Long)
 #GET     /quizzes/review/:id         controllers.QuizController.quizReview(id: Long)
 POST    /quizzes/create/:cid        controllers.QuizController.create(cid: Long)

@@ -1,6 +1,6 @@
 @(quizAnswerForm: Form[QuizAnswerData], curQuestion: FullQuizzQuestion, allAnswers: Seq[Answer])(implicit request: RequestHeader, messagesProvider: MessagesProvider)
 @main("Quiz") {
-    @helper.form(action = routes.QuizController.submitQuizQuestion(curQuestion.userAnswer.quizId)) {
+    @helper.form(action = routes.QuizController.submitQuizQuestion(curQuestion.userAnswer.quizId, curQuestion.userAnswer.id.get)) {
         @helper.CSRF.formField
         @*Current question*@
         <div>
