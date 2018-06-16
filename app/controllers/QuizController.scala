@@ -31,12 +31,16 @@ class QuizController @Inject()(cc: ControllerComponents, authenticatedAction: Au
 
   def quizQuestion(id: Long, q: Long) = authenticatedAction.andThen(authenticatedAction.PermissionCheckAction).async { implicit request =>
     for {
-      curQuestionOpt@Some((cat, quiz, quest, ans)) <- answersDAO.getQuestionAndAnswer(id, q) if curQuestionOpt.isDefined
-      possibleAnswers <- questionsDAO.getPossibleAnswers(quest.id.get)
+      curQuestionOpt <- answersDAO.getQuestionAndAnswer(id, q)
+      possibleAnswers <- if (curQuestionOpt.isDefined) questionsDAO.getPossibleAnswers(curQuestionOpt.get._3.id.get) else Future.successful(Seq.empty)
       allAnswers <- answersDAO.getQuizAnswers(id)
     } yield {
-      val answerForm = quizAnswerForm.fill(QuizAnswerData(ans.id.get, ans.userAnswer))
-      Ok(views.html.quiz(answerForm, FullQuizzQuestion(cat, quiz, quest, ans, possibleAnswers.map(t => (t._1, t._2.correctAnswer))), allAnswers))
+      curQuestionOpt match {
+        case Some((cat, quiz, quest, ans)) =>
+          val answerForm = quizAnswerForm.fill(QuizAnswerData(ans.id.get, ans.userAnswer))
+          Ok(views.html.quiz(answerForm, FullQuizzQuestion(cat, quiz, quest, ans, possibleAnswers.map(t => (t._1, t._2.correctAnswer))), allAnswers))
+        case None => BadRequest("There is no question matching the ids")
+      }
     }
   }
 
@@ -104,7 +108,7 @@ class QuizController @Inject()(cc: ControllerComponents, authenticatedAction: Au
     } yield a
 
     answerFor map {
-      as => Redirect(routes.QuizController.quizQuestion(as.head.quizId, as.head.questionId))
+      as => Redirect(routes.QuizController.quizQuestion(as.head.quizId, as.head.id.get))
     }
   }
 }
