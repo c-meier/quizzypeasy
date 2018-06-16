@@ -9,7 +9,7 @@ import slick.jdbc.JdbcProfile
 import scala.concurrent.{ExecutionContext, Future}
 import models._
 
-trait AnswersComponent extends QuizzesComponent with QuestionsComponent {
+trait AnswersComponent {
   self: HasDatabaseConfigProvider[JdbcProfile] =>
 
   import profile.api._
@@ -34,9 +34,30 @@ trait AnswersComponent extends QuizzesComponent with QuestionsComponent {
 // configuration file.
 @Singleton
 class AnswersDAO @Inject()(protected val dbConfigProvider: DatabaseConfigProvider)(implicit executionContext: ExecutionContext)
-  extends AnswersComponent with HasDatabaseConfigProvider[JdbcProfile] {
+  extends AnswersComponent with QuizzesComponent with QuestionsComponent with HasDatabaseConfigProvider[JdbcProfile] {
   import profile.api._
 
   // Get the object-oriented list of courses directly from the query table.
   val answers = TableQuery[AnswersTable]
+  val quizzes = TableQuery[QuizzesTable]
+  val questions = TableQuery[QuestionsTable]
+
+  def getQuestionsAndAnswers(quizId: Long): Future[Seq[(Quiz, Question, Answer)]] = {
+    val questionAnswer = for {
+      quiz <- quizzes if quiz.id === quizId
+      as <- answers if as.quizId === quizId
+      qs <- questions if as.questionId === qs.id
+    } yield (quiz, qs, as)
+    db.run(questionAnswer.result)
+  }
+
+  def getQuizAnswers(quizId: Long): Future[Seq[Answer]] = {
+    val query = answers.filter(_.quizId === quizId)
+    db.run(query.result)
+  }
+
+  def insertAll(as: Seq[Answer]): Future[Seq[Answer]] = {
+    val query = answers returning answers.map(_.id) into ((answer,id)=> answer.copy(Some(id)))
+    db.run(query ++= as)
+  }
 }
