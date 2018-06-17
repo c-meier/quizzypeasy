@@ -2,11 +2,10 @@ package dao
 
 import javax.inject.{Inject, Singleton}
 import models.AnswersQuestion
-import play.api.db.slick.DatabaseConfigProvider
-import play.api.db.slick.HasDatabaseConfigProvider
+import play.api.db.slick.{DatabaseConfigProvider, HasDatabaseConfigProvider}
 import slick.jdbc.JdbcProfile
 
-import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.ExecutionContext
 
 trait AnswersQuestionComponent extends QuestionsComponent with PossibleAnswerComponent {
   self: HasDatabaseConfigProvider[JdbcProfile] =>

@@ -1,5 +1,4 @@
 @import models.QuestionType
-@import util.CustomHelpers
 @(quizAnswerForm: Form[QuizAnswerData], curQuestion: FullQuizzQuestion, allAnswers: Seq[Answer])(implicit request: RequestHeader, messagesProvider: MessagesProvider)
 @main("Quiz") {
     <h2>Question</h2>

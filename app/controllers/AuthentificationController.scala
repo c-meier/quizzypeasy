@@ -5,12 +5,12 @@ import java.time.LocalDateTime
 import dao.UsersDAO
 import javax.inject._
 import models.{LoginData, SignUpData, User}
+import org.mindrot.jbcrypt.BCrypt
 import play.api.data.Forms._
 import play.api.data._
 import play.api.data.validation.Constraints._
 import play.api.i18n.I18nSupport
 import play.api.mvc._
-import org.mindrot.jbcrypt.BCrypt
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future

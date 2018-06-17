@@ -1,13 +1,11 @@
 package dao
 
 import javax.inject.{Inject, Singleton}
-import models.QuestionType.QuestionType
-import play.api.db.slick.DatabaseConfigProvider
-import play.api.db.slick.HasDatabaseConfigProvider
+import models._
+import play.api.db.slick.{DatabaseConfigProvider, HasDatabaseConfigProvider}
 import slick.jdbc.JdbcProfile
 
-import scala.concurrent.{ExecutionContext, Future}
-import models._
+import scala.concurrent.ExecutionContext
 
 trait QuestionCategoriesComponent extends QuizzesComponent with QuestionsComponent {
   self: HasDatabaseConfigProvider[JdbcProfile] =>
