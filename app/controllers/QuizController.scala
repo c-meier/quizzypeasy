@@ -47,7 +47,7 @@ class QuizController @Inject()(cc: ControllerComponents, authenticatedAction: Au
   val quizAnswerForm = Form(
     mapping(
       "id" -> longNumber,
-      "answer" -> text,
+      "answer" -> optional(text),
     )(QuizAnswerData.apply)(QuizAnswerData.unapply)
   )
 
@@ -61,7 +61,7 @@ class QuizController @Inject()(cc: ControllerComponents, authenticatedAction: Au
       } yield {
         curQuestionOpt match {
           case Some((cat, quiz, quest, ans)) =>
-            val answerForm = quizAnswerForm.fill(QuizAnswerData(ans.id.get, ans.userAnswer))
+            val answerForm = quizAnswerForm.fill(QuizAnswerData(ans.id.get, if(ans.userAnswer != "") Some(ans.userAnswer) else None))
             Ok(views.html.quiz(answerForm, FullQuizzQuestion(cat, quiz, quest, ans, possibleAnswers.map(t => (t._1, t._2.correctAnswer))), allAnswers))
           case None => BadRequest("There is no question matching the ids")
         }
@@ -79,21 +79,27 @@ class QuizController @Inject()(cc: ControllerComponents, authenticatedAction: Au
           }
         },
         aData => {
-          answersDAO.getQuizAnswer(id, aData.id).flatMap{
-            case Some(a) =>
-              if(a.isFinal){
-                Future.successful {
-                  redirect.flashing("info" -> "The answer to the last question can't be modified")
+          if(aData.answer.isDefined) {
+            answersDAO.getQuizAnswer(id, aData.id).flatMap{
+              case Some(a) =>
+                if(a.isFinal){
+                  Future.successful {
+                    redirect.flashing("info" -> "The answer to the last question can't be modified")
+                  }
                 }
-              }
-              else{
-                answersDAO.update(Answer(a.id, aData.answer, false, a.questionId, a.quizId)).map{
-                  case 0 => redirect.flashing("info" -> "Could not update last question")
-                  case _ => redirect
+                else{
+                  answersDAO.update(Answer(a.id, aData.answer.get, false, a.questionId, a.quizId)).map{
+                    case 0 => redirect.flashing("info" -> "Could not update last question")
+                    case _ => redirect
+                  }
                 }
+              case None => Future.successful {
+                redirect.flashing("info" -> "The answer to the last question does not match the quizz")
               }
-            case None => Future.successful {
-              redirect.flashing("info" -> "The answer to the last question does not match the quizz")
+            }
+          } else {
+            Future.successful{
+              redirect
             }
           }
         }
@@ -111,21 +117,27 @@ class QuizController @Inject()(cc: ControllerComponents, authenticatedAction: Au
           }
         },
         aData => {
-          answersDAO.getQuizAnswer(id, aData.id).flatMap{
-            case Some(a) =>
-              if(a.isFinal){
-                Future.successful {
-                  redirect.flashing("info" -> "The answer to the last question can't be modified")
+          if(aData.answer.isDefined) {
+            answersDAO.getQuizAnswer(id, aData.id).flatMap{
+              case Some(a) =>
+                if(a.isFinal){
+                  Future.successful {
+                    redirect.flashing("info" -> "The answer to the last question can't be modified")
+                  }
                 }
-              }
-              else{
-                answersDAO.update(Answer(a.id, aData.answer, true, a.questionId, a.quizId)).map{
-                  case 0 => redirect.flashing("info" -> "Could not update the question")
-                  case _ => redirect
+                else{
+                  answersDAO.update(Answer(a.id, aData.answer.get, true, a.questionId, a.quizId)).map{
+                    case 0 => redirect.flashing("info" -> "Could not update the question")
+                    case _ => redirect
+                  }
                 }
+              case None => Future.successful {
+                redirect.flashing("info" -> "The answer to the question does not match the quizz")
               }
-            case None => Future.successful {
-              redirect.flashing("info" -> "The answer to the question does not match the quizz")
+            }
+          } else {
+            Future.successful{
+              redirect
             }
           }
         }
