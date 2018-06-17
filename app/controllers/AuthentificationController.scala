@@ -4,14 +4,13 @@ import java.time.LocalDateTime
 
 import dao.UsersDAO
 import javax.inject._
-import models.{LoginData, SignUpData}
+import models.{LoginData, SignUpData, User}
 import play.api.data.Forms._
 import play.api.data._
 import play.api.data.validation.Constraints._
 import play.api.i18n.I18nSupport
 import play.api.mvc._
 import org.mindrot.jbcrypt.BCrypt
-
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
@@ -56,10 +55,12 @@ class AuthentificationController @Inject()(cc: ControllerComponents, usersDAO: U
       },
       uData => {
         val passHash = BCrypt.hashpw(uData.password, BCrypt.gensalt)
-        val optU = usersDAO.insert(models.User(None, uData.username, passHash, LocalDateTime.now(), false))
-        optU map {
-          case u => Redirect(routes.HomeController.index()).withSession("connected" -> u.name)
-          case _ => BadRequest(views.html.signup(signUpForm.fill(uData)))
+        for {
+          optU <- usersDAO.findByName(uData.username)
+          u <- if (optU.isEmpty) usersDAO.insert(models.User(None, uData.username, passHash, LocalDateTime.now(), false)) else Future.successful{Nil}
+        } yield u match {
+          case User(_, name, _, _, _) => Redirect(routes.HomeController.index()).withSession("connected" -> name)
+          case Nil => BadRequest(views.html.signup(signUpForm.fill(uData)))
         }
       }
     )
