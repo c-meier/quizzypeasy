@@ -39,9 +39,10 @@
                     }
                 </ul>
             </nav>
-            @request.flash.get("info").map(i => {
-                <div class="info">@i</div>
-            })
+            @request.flash.get("info") match {
+                case Some(info) => {<div class="info"> @info </div>}
+                case None => {}
+            }
         </section>
 
         @* And here's where we render the `Html` object containing
