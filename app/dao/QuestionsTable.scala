@@ -49,8 +49,7 @@ class QuestionsDAO @Inject()(protected val dbConfigProvider: DatabaseConfigProvi
       questioncategory <- questionCategory if questioncategory.categoryId === category
       question <- questions if question.id === questioncategory.id
     } yield question
-    query.sortBy(x=>randRow).take(10)
-    db.run(query.result)
+    db.run(query.sortBy(x=>randRow).take(10).result)
   }
 
   def getPossibleAnswers(question: Long): Future[Seq[(PossibleAnswer, AnswersQuestion)]] = {

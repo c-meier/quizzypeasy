@@ -4,9 +4,6 @@
     @defining(play.core.PlayVersion.current) { version =>
         <!-- from https://codepen.io/trangsihung/pen/zbwGx-->
         <div class="form-wrap">
-            <div class="tabs">
-                <h3 class="login-tab"><a href="#login-tab-content">Login</a></h3>
-            </div><!--.tabs-->
 
             <div class="tabs-content">
                 @helper.form(action = routes.AuthentificationController.login(), args = 'class -> "login-form") {

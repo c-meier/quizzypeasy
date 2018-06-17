@@ -1,6 +1,6 @@
 USE quizzypeasy;
 INSERT INTO users (user_name, password, date_inscription, is_admin) VALUES
-  (admin,	'$2a$10$xYTE4i3hs0LoFJiA/3zoheS/7C1tQdmBLTTu4MpqDXryOWHOy6aeW', '2018-06-17 12:12:20', TRUE),
+  ('admin',	'$2a$10$xYTE4i3hs0LoFJiA/3zoheS/7C1tQdmBLTTu4MpqDXryOWHOy6aeW', '2018-06-17 12:12:20', TRUE),
   ('test','test',now(),FALSE),
   ('daniel','daniel',now(),TRUE);
 
@@ -25,7 +25,8 @@ INSERT INTO questions (id_question,name,content,question_type) VALUES
   (9,'Accessor','What is default access modifier in Scala?',0),
   (10,'Dude...really, Rentsch question like','What is one of the similarity between Scala’s Int and Java’s java.lang.Integer?',0),
   (11,'var and val','In SCALA, var stands for variable and val for value',1),
-  (12, 'Architectural knowledge', 'Which story is skipped at the Cheseau site ?', 2);
+  (12, 'Architectural knowledge', 'Which story is skipped at the Cheseau site ?', 2),
+  (13,'Maps', 'Immutable maps are the default maps if no explicit import ?',1);
 
 INSERT INTO question_categories (id_question_category, category_id, question_id) VALUES
   (1,2,1),
@@ -39,7 +40,8 @@ INSERT INTO question_categories (id_question_category, category_id, question_id)
   (9,2,8),
   (10,2,9),
   (11,2,10),
-  (12,2,11);
+  (12,2,11),
+  (13,2,13);
 
 INSERT INTO possible_answers (id_possible_answer, value) VALUES
   (1,'True'),
@@ -89,7 +91,9 @@ INSERT INTO answers_question (id_answers, id_question, correct_answer) VALUES
   (19,10,FALSE),
   (20,10,TRUE),
   (1,11,TRUE),
-  (2,11,FALSE);
+  (2,11,FALSE),
+  (1,13,TRUE),
+  (2,13,FALSE);
 
 
 

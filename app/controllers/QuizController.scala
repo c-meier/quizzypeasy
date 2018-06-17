@@ -159,7 +159,7 @@ class QuizController @Inject()(cc: ControllerComponents, authenticatedAction: Au
       for {
         qs <- answersDAO.getQuestionsAndAnswers(id)
         as <- questionsDAO.getQuizPossibleAnswers(id)
-        qz <- quizzesDAO.update(Quiz(qs(0)._2.id, calculateScore(qs, as), qs(0)._2.categoryId, qs(0)._2.userId))
+        qz <- quizzesDAO.update(Quiz(qs.head._2.id, calculateScore(qs, as), qs.head._2.categoryId, qs.head._2.userId))
         qa <- answersDAO.lockAll(id)
       } yield Redirect(routes.QuizController.quizReview(id))
     }
@@ -172,23 +172,6 @@ class QuizController @Inject()(cc: ControllerComponents, authenticatedAction: Au
         Ok(views.html.userquizzes(s))
       }
     }
-/*
-  def quizAnswer(id: Long, q: Long) = Action.async { implicit request =>
-    quizAnswerForm.bindFromRequest.fold(
-      formWithErrors => {
-        Future {
-          BadRequest(views.html.signup(formWithErrors))
-        }
-      },
-      uData => {
-        val optU = usersDAO.insert(models.User(None, uData.username, uData.password, LocalDateTime.now(), false))
-        optU map {
-          case u => Redirect(routes.HomeController.index()).withSession("connected" -> u.name)
-          case _ => BadRequest(views.html.signup(signUpForm.fill(uData)))
-        }
-      }
-    )
-  }*/
 
   def create(categoryId: Long) = authenticatedAction
     .andThen(authenticatedAction.PermissionCheckAction).async { implicit request =>
