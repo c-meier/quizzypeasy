@@ -15,14 +15,10 @@
                         </ul>
                     }
                     @helper.CSRF.formField
-                    @helper.inputText(signUpForm("user_name"), '_label -> "Username", 'class -> "input", 'autocomplete -> "off", 'placeholder -> "Username")
-                    @helper.inputPassword(signUpForm("user_pass"), '_label -> "Password",'class -> "input", 'class -> "input", 'autocomplete -> "off", 'placeholder -> "Password")
+                    @helper.inputText(signUpForm("user_name"), '_label -> "Username", 'class -> "input", 'autocomplete -> "off", 'placeholder -> "Username", '_showConstraints -> false)
+                    @helper.inputPassword(signUpForm("user_pass"), '_label -> "Password",'class -> "input", 'class -> "input", 'autocomplete -> "off", 'placeholder -> "Password", '_showConstraints -> false)
                     <input type="submit" class="button" value="Sign Up">
                 }<!--.login-form-->
-                <div class="help-text">
-                    <p>By signing up, you agree to our</p>
-                    <p><a href="#">Terms of service</a></p>
-                </div><!--.help-text-->
             </div><!--.tabs-content-->
         </div><!--.form-wrap-->
     }

@@ -15,14 +15,10 @@
                         </ul>
                     }
                     @helper.CSRF.formField
-                    @helper.inputText(loginForm("user_login"), '_label -> "Username", 'class -> "input", 'autocomplete -> "off", 'placeholder -> "Username")
-                    @helper.inputPassword(loginForm("user_pass"), '_label -> "Password",'class -> "input", 'autocomplete -> "off", 'placeholder -> "Password")
-                    @helper.checkbox(loginForm("remember_me"), '_label -> "Remember me", 'class -> "checkbox")
+                    @helper.inputText(loginForm("user_login"), '_label -> "Username", 'class -> "input", 'autocomplete -> "off", 'placeholder -> "Username", '_showConstraints -> false)
+                    @helper.inputPassword(loginForm("user_pass"), '_label -> "Password",'class -> "input", 'autocomplete -> "off", 'placeholder -> "Password",'_showConstraints -> false)
                     <input type="submit" class="button" value="Login">
                 }<!--.login-form-->
-                <div class="help-text">
-                    <p><a href="#">Forget your password?</a></p>
-                </div><!--.help-text-->
             </div><!--.tabs-content-->
         </div><!--.form-wrap-->
     }
