@@ -2,13 +2,12 @@
 
 <div class="content">
         <!--from https://codepen.io/maheshambure21/pen/bNXXeM/-->
-    <h2>School</h2>
+    <h2>Create a Quiz: Choose your category</h2>
     <div class="grid">
         @for(c <- categories) {
-
             @helper.form(action = routes.QuizController.create(c.id.get), args = 'id -> {"myForm" + c.id.get}) {
                 <figure class="effect-img">
-                    <img src="@routes.Assets.versioned("/images/" + c.id.get + ".png")" height="213.15px" alt="@c.name"/>
+                    <img src="@routes.Assets.versioned("/images/categories/" + c.id.get + ".png")" height="213.15px" alt="@c.name"/>
                     <figcaption>
                         <h2><span></span></h2>
                         <p>@c.description</p>
