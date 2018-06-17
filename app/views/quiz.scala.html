@@ -35,6 +35,11 @@
                     }
                 }
                 <input type="submit" value="Check" />
+                <input
+                    type="submit"
+                    value="Save"
+                    formaction="@routes.QuizController.skipToQuizQuestion(curQuestion.userAnswer.quizId, curQuestion.userAnswer.id.get)"
+                />
             }
         </div>
 

@@ -10,10 +10,11 @@ import play.api.data._
 import play.api.data.validation.Constraints._
 import play.api.i18n.I18nSupport
 import play.api.libs.typedmap.TypedKey
+import play.api.mvc.Results.Forbidden
 import play.api.mvc._
 
 import scala.concurrent.ExecutionContext.Implicits.global
-import scala.concurrent.{Await, Future}
+import scala.concurrent.{Await, ExecutionContext, Future}
 import scala.util.matching.Regex
 
 
@@ -23,6 +24,26 @@ import scala.util.matching.Regex
  */
 @Singleton
 class QuizController @Inject()(cc: ControllerComponents, authenticatedAction: AuthenticatedAction, usersDAO: UsersDAO, quizzesDAO: QuizzesDAO, questionsDAO: QuestionsDAO, answersDAO: AnswersDAO) extends AbstractController(cc) with I18nSupport {
+  def UserQuizCheckAction(quizId: Long) = new ActionFilter[AuthenticatedRequest] {
+    def executionContext = global
+
+    def filter[A](input: AuthenticatedRequest[A]) = input.userInfo match {
+      case Some((id, name, isAdmin)) =>
+        for {
+          q <- quizzesDAO.listFromUser(id)
+        } yield {
+          if(q.exists(_._1.id.get == quizId))
+            None
+          else
+            Some(Redirect(routes.QuizController.listQuizzes()).flashing("info" -> "The quiz you tried to acces is not yours."))
+        }
+      case None =>
+        Future.successful {
+          Some(Forbidden("You are not authorized"))
+        }
+    }
+  }
+
   val quizAnswerForm = Form(
     mapping(
       "id" -> longNumber,
@@ -30,8 +51,9 @@ class QuizController @Inject()(cc: ControllerComponents, authenticatedAction: Au
     )(QuizAnswerData.apply)(QuizAnswerData.unapply)
   )
 
-  def quizQuestion(id: Long, q: Long) = authenticatedAction.andThen(authenticatedAction.PermissionCheckAction).async { implicit request =>
-    if(request.userInfo.get._4.contains(id))
+  def quizQuestion(id: Long, q: Long) = authenticatedAction
+    .andThen(authenticatedAction.PermissionCheckAction)
+    .andThen(UserQuizCheckAction(id)).async { implicit request =>
       for {
         curQuestionOpt <- answersDAO.getQuestionAndAnswer(id, q)
         possibleAnswers <- if (curQuestionOpt.isDefined) questionsDAO.getPossibleAnswers(curQuestionOpt.get._3.id.get) else Future.successful(Seq.empty)
@@ -44,16 +66,15 @@ class QuizController @Inject()(cc: ControllerComponents, authenticatedAction: Au
           case None => BadRequest("There is no question matching the ids")
         }
       }
-    else
-      Future{Redirect(routes.QuizController.listQuizzes()).flashing("info" -> "The quiz you tried to acces is not yours.")}
-  }
+    }
 
-  def skipToQuizQuestion(id: Long, q: Long) = authenticatedAction.andThen(authenticatedAction.PermissionCheckAction).async { implicit request =>
-    if(request.userInfo.get._4.contains(id)) {
+  def skipToQuizQuestion(id: Long, q: Long) = authenticatedAction
+    .andThen(authenticatedAction.PermissionCheckAction)
+    .andThen(UserQuizCheckAction(id)).async { implicit request =>
       val redirect = Redirect(routes.QuizController.quizQuestion(id, q))
       quizAnswerForm.bindFromRequest.fold(
         formWithErrors => {
-          Future {
+          Future.successful {
             redirect.flashing("info" -> "The answer to the last question has not been saved because there was an error")
           }
         },
@@ -61,7 +82,7 @@ class QuizController @Inject()(cc: ControllerComponents, authenticatedAction: Au
           answersDAO.getQuizAnswer(id, aData.id).flatMap{
             case Some(a) =>
               if(a.isFinal){
-                Future {
+                Future.successful {
                   redirect.flashing("info" -> "The answer to the last question can't be modified")
                 }
               }
@@ -71,24 +92,21 @@ class QuizController @Inject()(cc: ControllerComponents, authenticatedAction: Au
                   case _ => redirect
                 }
               }
-            case None => Future{
+            case None => Future.successful {
               redirect.flashing("info" -> "The answer to the last question does not match the quizz")
             }
           }
         }
       )
     }
-    else
-      Future{Redirect(routes.QuizController.listQuizzes()).flashing("info" -> "The quiz you tried to acces is not yours.")}
 
-  }
-
-  def submitQuizQuestion(id: Long, q: Long) = authenticatedAction.andThen(authenticatedAction.PermissionCheckAction).async { implicit request =>
-    if(request.userInfo.get._4.contains(id)) {
+  def submitQuizQuestion(id: Long, q: Long) = authenticatedAction
+    .andThen(authenticatedAction.PermissionCheckAction)
+    .andThen(UserQuizCheckAction(id)).async { implicit request =>
       val redirect = Redirect(routes.QuizController.quizQuestion(id, q))
       quizAnswerForm.bindFromRequest.fold(
         formWithErrors => {
-          Future {
+          Future.successful {
             redirect.flashing("info" -> "The answer to the question has not been saved because there was an error")
           }
         },
@@ -96,7 +114,7 @@ class QuizController @Inject()(cc: ControllerComponents, authenticatedAction: Au
           answersDAO.getQuizAnswer(id, aData.id).flatMap{
             case Some(a) =>
               if(a.isFinal){
-                Future {
+                Future.successful {
                   redirect.flashing("info" -> "The answer to the last question can't be modified")
                 }
               }
@@ -106,19 +124,17 @@ class QuizController @Inject()(cc: ControllerComponents, authenticatedAction: Au
                   case _ => redirect
                 }
               }
-            case None => Future{
+            case None => Future.successful {
               redirect.flashing("info" -> "The answer to the question does not match the quizz")
             }
           }
         }
       )
     }
-    else
-      Future{Redirect(routes.QuizController.listQuizzes()).flashing("info" -> "The quiz you tried to acces is not yours.")}
-  }
 
-  def quizReview(id: Long) = authenticatedAction.andThen(authenticatedAction.PermissionCheckAction).async { implicit request =>
-    if(request.userInfo.get._4.contains(id))
+  def quizReview(id: Long) = authenticatedAction
+    .andThen(authenticatedAction.PermissionCheckAction)
+    .andThen(UserQuizCheckAction(id)).async { implicit request =>
       for {
         qs <- answersDAO.getQuestionsAndAnswers(id)
         as <- questionsDAO.getQuizPossibleAnswers(id)
@@ -128,37 +144,34 @@ class QuizController @Inject()(cc: ControllerComponents, authenticatedAction: Au
           case (cat, quiz, quest, ans) => FullQuizzQuestion(cat, quiz, quest, ans, posAnsMap(quest.id.get).map(t => (t._1, t._2.correctAnswer)))
         })))
       }
-    else
-      Future{Redirect(routes.QuizController.listQuizzes()).flashing("info" -> "The quiz you tried to acces is not yours.")}
-  }
-
-  def quizScore(id: Long) = authenticatedAction.andThen(authenticatedAction.PermissionCheckAction).async { implicit request =>
-    def calculateScore(qs: Seq[(Category, Quiz, Question, Answer)], as: Seq[(PossibleAnswer, AnswersQuestion)]) : Int = {
-      val posAnsMap = as.groupBy(_._2.questionId)
-      val allQuestions = qs.map({
-        case (cat, quiz, quest, ans) => FullQuizzQuestion(cat, quiz, quest, ans, posAnsMap(quest.id.get).map(t => (t._1, t._2.correctAnswer)))
-      })
-      allQuestions.count(_.isCorrect)
     }
-    if(request.userInfo.get._4.contains(id))
+
+  def quizScore(id: Long) = authenticatedAction
+    .andThen(authenticatedAction.PermissionCheckAction)
+    .andThen(UserQuizCheckAction(id)).async { implicit request =>
+      def calculateScore(qs: Seq[(Category, Quiz, Question, Answer)], as: Seq[(PossibleAnswer, AnswersQuestion)]) : Int = {
+        val posAnsMap = as.groupBy(_._2.questionId)
+        val allQuestions = qs.map({
+          case (cat, quiz, quest, ans) => FullQuizzQuestion(cat, quiz, quest, ans, posAnsMap(quest.id.get).map(t => (t._1, t._2.correctAnswer)))
+        })
+        allQuestions.count(_.isCorrect)
+      }
       for {
         qs <- answersDAO.getQuestionsAndAnswers(id)
         as <- questionsDAO.getQuizPossibleAnswers(id)
         qz <- quizzesDAO.update(Quiz(qs(0)._2.id, calculateScore(qs, as), qs(0)._2.categoryId, qs(0)._2.userId))
         qa <- answersDAO.lockAll(id)
       } yield Redirect(routes.QuizController.quizReview(id))
-    else
-      Future{Redirect(routes.QuizController.listQuizzes()).flashing("info" -> "The quiz you tried to acces is not yours.")}
-
-  }
-
-  def listQuizzes() = authenticatedAction.andThen(authenticatedAction.PermissionCheckAction).async { implicit request =>
-    for {
-      s <- quizzesDAO.listFromUser(request.userInfo.get._1)
-    } yield {
-      Ok(views.html.userquizzes(s))
     }
-  }
+
+  def listQuizzes() = authenticatedAction
+    .andThen(authenticatedAction.PermissionCheckAction).async { implicit request =>
+      for {
+        s <- quizzesDAO.listFromUser(request.userInfo.get._1)
+      } yield {
+        Ok(views.html.userquizzes(s))
+      }
+    }
 /*
   def quizAnswer(id: Long, q: Long) = Action.async { implicit request =>
     quizAnswerForm.bindFromRequest.fold(
@@ -177,15 +190,16 @@ class QuizController @Inject()(cc: ControllerComponents, authenticatedAction: Au
     )
   }*/
 
-  def create(categoryId: Long) = authenticatedAction.andThen(authenticatedAction.PermissionCheckAction).async { implicit request =>
-    val answerFor = for {
-      quiz <- quizzesDAO.insert(Quiz(None, -1, categoryId, request.userInfo.get._1))
-      questions <- questionsDAO.getQuestions(categoryId)
-      a <- answersDAO.insertAll(for (q <- questions) yield Answer(None, "", false, q.id.get, quiz.id.get))
-    } yield a
+  def create(categoryId: Long) = authenticatedAction
+    .andThen(authenticatedAction.PermissionCheckAction).async { implicit request =>
+      val answerFor = for {
+        quiz <- quizzesDAO.insert(Quiz(None, -1, categoryId, request.userInfo.get._1))
+        questions <- questionsDAO.getQuestions(categoryId)
+        a <- answersDAO.insertAll(for (q <- questions) yield Answer(None, "", false, q.id.get, quiz.id.get))
+      } yield a
 
-    answerFor map {
-      as => Redirect(routes.QuizController.quizQuestion(as.head.quizId, as.head.id.get))
+      answerFor map {
+        as => Redirect(routes.QuizController.quizQuestion(as.head.quizId, as.head.id.get))
+      }
     }
-  }
 }

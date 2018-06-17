@@ -10,7 +10,7 @@ import play.api.mvc._
 
 import scala.concurrent.{ExecutionContext, Future}
 
-class AuthenticatedRequest[A](val userInfo: Option[(Long, String, Boolean, Seq[Long])], request: Request[A]) extends WrappedRequest[A](request)
+class AuthenticatedRequest[A](val userInfo: Option[(Long, String, Boolean)], request: Request[A]) extends WrappedRequest[A](request)
 
 class AuthenticatedAction @Inject()(val parser: BodyParsers.Default, usersDAO: UsersDAO, quizzesDAO: QuizzesDAO)(implicit val executionContext: ExecutionContext)
   extends ActionBuilder[AuthenticatedRequest, AnyContent] with ActionTransformer[Request, AuthenticatedRequest] {
@@ -18,23 +18,20 @@ class AuthenticatedAction @Inject()(val parser: BodyParsers.Default, usersDAO: U
 
   def transform[A](request: Request[A]): Future[AuthenticatedRequest[A]] = {
     request.session.get("connected") match {
-      case None => {
+      case None =>
         Future.successful(new AuthenticatedRequest(None, request))
-      }
-      case Some(u) => {
+      case Some(u) =>
         val user = for {
           u <- usersDAO.findByName(u)
           if u.isDefined
-          q <- quizzesDAO.listFromUser(u.get.id.get)
-        } yield (u, q)
+        } yield u
         user.map[AuthenticatedRequest[A]]({
-          case (Some(User(Some(id), name, _, _, isAdmin)), quizzes) => {
-            val userInfo = (id, name, isAdmin, quizzes.map(_._1.id.get))
+          case Some(User(Some(id), name, _, _, isAdmin)) => {
+            val userInfo = (id, name, isAdmin)
             new AuthenticatedRequest(Some(userInfo), request)
           }
-          case (None, _) => new AuthenticatedRequest(None, request)
+          case None => new AuthenticatedRequest(None, request)
         })
-      }
     }
   }
 
