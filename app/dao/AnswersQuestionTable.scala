@@ -23,8 +23,6 @@ trait AnswersQuestionComponent extends QuestionsComponent with PossibleAnswerCom
   }
 }
 
-
-
 @Singleton
 class AnswersQuestionDAO @Inject()(protected val dbConfigProvider: DatabaseConfigProvider)(implicit executionContext: ExecutionContext)
   extends HasDatabaseConfigProvider[JdbcProfile] with AnswersQuestionComponent {

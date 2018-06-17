@@ -16,12 +16,14 @@ trait UsersComponent {
 
   import profile.api._
 
+  /**
+    * Value to map java LocalDateTime to database Timestamp value
+    */
   implicit lazy val localDateToDate = MappedColumnType.base[LocalDateTime, Timestamp](
     l => Timestamp.valueOf(l),
     d => d.toLocalDateTime()
   )
 
-  // This class convert the database's user table in a object-oriented entity: the User model.
   class UsersTable(tag: Tag) extends Table[User](tag, "users") {
     def id = column[Long]("id_user", O.PrimaryKey, O.AutoInc) // Primary key, auto-incremented
     def name = column[String]("user_name")
@@ -35,17 +37,11 @@ trait UsersComponent {
 
 }
 
-
-// This class contains the object-oriented list of courses and offers methods to query the data.
-// A DatabaseConfigProvider is injected through dependency injection; it provides a Slick type bundling a database and
-// driver. The class extends the courses' query table and loads the JDBC profile configured in the application's
-// configuration file.
 @Singleton
 class UsersDAO @Inject()(protected val dbConfigProvider: DatabaseConfigProvider)(implicit executionContext: ExecutionContext)
   extends HasDatabaseConfigProvider[JdbcProfile] with UsersComponent with QuizzesComponent {
   import profile.api._
 
-  // Get the object-oriented list of courses directly from the query table.
   val users = TableQuery[UsersTable]
   val quizzes = TableQuery[QuizzesTable]
 

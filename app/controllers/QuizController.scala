@@ -19,8 +19,7 @@ import scala.util.matching.Regex
 
 
 /**
- * This controller creates an `Action` to handle HTTP requests to the
- * application's login page.
+ * This controller handle HTTP Request for the quizzes
  */
 @Singleton
 class QuizController @Inject()(cc: ControllerComponents, authenticatedAction: AuthenticatedAction, usersDAO: UsersDAO, quizzesDAO: QuizzesDAO, questionsDAO: QuestionsDAO, answersDAO: AnswersDAO) extends AbstractController(cc) with I18nSupport {
@@ -51,6 +50,11 @@ class QuizController @Inject()(cc: ControllerComponents, authenticatedAction: Au
     )(QuizAnswerData.apply)(QuizAnswerData.unapply)
   )
 
+  /**
+    * Methods used to get a questions from a quiz
+    * @param id The quiz id
+    * @param q The question id
+    */
   def quizQuestion(id: Long, q: Long) = authenticatedAction
     .andThen(authenticatedAction.PermissionCheckAction)
     .andThen(UserQuizCheckAction(id)).async { implicit request =>
@@ -68,6 +72,11 @@ class QuizController @Inject()(cc: ControllerComponents, authenticatedAction: Au
       }
     }
 
+  /**
+    * Save the current question and redirect to the selected question
+    * @param id Quiz id
+    * @param q The id of the selected question
+    */
   def skipToQuizQuestion(id: Long, q: Long) = authenticatedAction
     .andThen(authenticatedAction.PermissionCheckAction)
     .andThen(UserQuizCheckAction(id)).async { implicit request =>
@@ -106,6 +115,11 @@ class QuizController @Inject()(cc: ControllerComponents, authenticatedAction: Au
       )
     }
 
+  /**
+    * Lock current question answer, compare user answer to correct answer and redirect to the current page
+    * @param id Quiz id
+    * @param q Question id
+    */
   def submitQuizQuestion(id: Long, q: Long) = authenticatedAction
     .andThen(authenticatedAction.PermissionCheckAction)
     .andThen(UserQuizCheckAction(id)).async { implicit request =>
@@ -144,6 +158,10 @@ class QuizController @Inject()(cc: ControllerComponents, authenticatedAction: Au
       )
     }
 
+  /**
+    * Get the review of the selected quiz
+    * @param id Quiz id
+    */
   def quizReview(id: Long) = authenticatedAction
     .andThen(authenticatedAction.PermissionCheckAction)
     .andThen(UserQuizCheckAction(id)).async { implicit request =>
@@ -158,6 +176,10 @@ class QuizController @Inject()(cc: ControllerComponents, authenticatedAction: Au
       }
     }
 
+  /**
+    * Lock all questions of a quiz and calculates the score given by the number of correct answers
+    * @param id Quiz id
+    */
   def quizScore(id: Long) = authenticatedAction
     .andThen(authenticatedAction.PermissionCheckAction)
     .andThen(UserQuizCheckAction(id)).async { implicit request =>
@@ -176,6 +198,9 @@ class QuizController @Inject()(cc: ControllerComponents, authenticatedAction: Au
       } yield Redirect(routes.QuizController.quizReview(id))
     }
 
+  /**
+    * Get the list of quiz of the user
+    */
   def listQuizzes() = authenticatedAction
     .andThen(authenticatedAction.PermissionCheckAction).async { implicit request =>
       for {
@@ -185,6 +210,10 @@ class QuizController @Inject()(cc: ControllerComponents, authenticatedAction: Au
       }
     }
 
+  /**
+    * Create a quiz given the selected category and reidrect to the first question of the quiz
+    * @param categoryId The id of the selected category
+    */
   def create(categoryId: Long) = authenticatedAction
     .andThen(authenticatedAction.PermissionCheckAction).async { implicit request =>
       val answerFor = for {

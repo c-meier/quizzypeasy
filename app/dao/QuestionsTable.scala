@@ -43,6 +43,10 @@ class QuestionsDAO @Inject()(protected val dbConfigProvider: DatabaseConfigProvi
   val possibleAnswers = TableQuery[PossibleAnswersTable]
   val answers = TableQuery[AnswersTable]
 
+  /**
+    * Get 10 questions associated to a category
+    * @param category The category id
+    */
   def getQuestions(category: Long): Future[Seq[Question]] = {
     val randRow = SimpleFunction.nullary[Double]("rand")
     val query = for {
@@ -52,6 +56,10 @@ class QuestionsDAO @Inject()(protected val dbConfigProvider: DatabaseConfigProvi
     db.run(query.sortBy(x=>randRow).take(10).result)
   }
 
+  /**
+    * Get the possible answer for a question
+    * @param question The question id
+    */
   def getPossibleAnswers(question: Long): Future[Seq[(PossibleAnswer, AnswersQuestion)]] = {
     val query = for {
       aq <- answersQuestion if aq.questionId === question
@@ -60,6 +68,10 @@ class QuestionsDAO @Inject()(protected val dbConfigProvider: DatabaseConfigProvi
     db.run(query.result)
   }
 
+  /**
+    * Get all possible answers in a quiz
+    * @param quiz The quiz id
+    */
   def getQuizPossibleAnswers(quiz: Long): Future[Seq[(PossibleAnswer, AnswersQuestion)]] = {
     val query = for {
       ans <- answers if ans.quizId === quiz

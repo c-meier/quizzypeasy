@@ -15,11 +15,6 @@ import org.mindrot.jbcrypt.BCrypt
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
-
-/**
- * This controller creates an `Action` to handle HTTP requests to the
- * application's login page.
- */
 @Singleton
 class AuthentificationController @Inject()(cc: ControllerComponents, usersDAO: UsersDAO) extends AbstractController(cc) with I18nSupport {
 
@@ -38,14 +33,23 @@ class AuthentificationController @Inject()(cc: ControllerComponents, usersDAO: U
     )(SignUpData.apply)(SignUpData.unapply)
   )
 
+  /**
+    * Login action that redirect to an html page
+    */
   def loginPage = Action { implicit request =>
     Ok(views.html.login(loginForm))
   }
 
+  /**
+    * Signup action that redirect to an html page
+    */
   def signUpPage = Action { implicit request =>
     Ok(views.html.signup(signUpForm))
   }
 
+  /**
+    * Signup method
+    */
   def signUp = Action.async { implicit request =>
     signUpForm.bindFromRequest.fold(
       formWithErrors => {
@@ -66,6 +70,9 @@ class AuthentificationController @Inject()(cc: ControllerComponents, usersDAO: U
     )
   }
 
+  /**
+    * Login method
+    */
   def login = Action.async { implicit request =>
     loginForm.bindFromRequest.fold(
       formWithErrors => {
@@ -86,6 +93,9 @@ class AuthentificationController @Inject()(cc: ControllerComponents, usersDAO: U
     )
   }
 
+  /**
+    * Logout the user by creating a new empty session
+    */
   def logout = Action { implicit request =>
     Redirect(routes.HomeController.index()).withNewSession
   }
