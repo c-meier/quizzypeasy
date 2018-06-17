@@ -1,21 +1,15 @@
 package controllers
 
-import java.time.LocalDateTime
-
 import dao.{AnswersDAO, QuestionsDAO, QuizzesDAO, UsersDAO}
 import javax.inject._
 import models._
 import play.api.data.Forms._
 import play.api.data._
-import play.api.data.validation.Constraints._
 import play.api.i18n.I18nSupport
-import play.api.libs.typedmap.TypedKey
-import play.api.mvc.Results.Forbidden
 import play.api.mvc._
 
 import scala.concurrent.ExecutionContext.Implicits.global
-import scala.concurrent.{Await, ExecutionContext, Future}
-import scala.util.matching.Regex
+import scala.concurrent.Future
 
 
 /**

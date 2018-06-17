@@ -1,14 +1,11 @@
 package dao
 
-import java.util.Date
-
 import javax.inject.{Inject, Singleton}
-import play.api.db.slick.DatabaseConfigProvider
-import play.api.db.slick.HasDatabaseConfigProvider
+import models.PossibleAnswer
+import play.api.db.slick.{DatabaseConfigProvider, HasDatabaseConfigProvider}
 import slick.jdbc.JdbcProfile
 
-import scala.concurrent.{ExecutionContext, Future}
-import models.{PossibleAnswer, Question}
+import scala.concurrent.ExecutionContext
 
 trait PossibleAnswerComponent {
   self: HasDatabaseConfigProvider[JdbcProfile] =>

@@ -1,14 +1,11 @@
 package controllers
 
-import javax.inject._
-
 import dao.CategoriesDAO
+import javax.inject._
 import play.api.i18n.I18nSupport
 import play.api.mvc._
 
 import scala.concurrent.ExecutionContext.Implicits.global
-
-import scala.concurrent.Future
 
 /**
  * This controller creates an `Action` to handle HTTP requests to the

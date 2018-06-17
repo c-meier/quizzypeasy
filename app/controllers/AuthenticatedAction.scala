@@ -3,8 +3,6 @@ package controllers
 import dao.{QuizzesDAO, UsersDAO}
 import javax.inject.Inject
 import models.User
-import play.api.Logger
-import play.api.libs.typedmap.TypedKey
 import play.api.mvc.Results._
 import play.api.mvc._
 
@@ -30,7 +28,7 @@ class AuthenticatedAction @Inject()(val parser: BodyParsers.Default, usersDAO: U
             val userInfo = (id, name, isAdmin)
             new AuthenticatedRequest(Some(userInfo), request)
           }
-          case None => new AuthenticatedRequest(None, request)
+          case _ => new AuthenticatedRequest(None, request)
         })
     }
   }
@@ -40,7 +38,7 @@ class AuthenticatedAction @Inject()(val parser: BodyParsers.Default, usersDAO: U
 
     def filter[A](input: AuthenticatedRequest[A]) = Future.successful {
       if (input.userInfo.isEmpty)
-        Some(Redirect(routes.AuthentificationController.loginPage()).flashing("info" -> "You must be logged in to create a quiz!"))
+        Some(Redirect(routes.AuthentificationController.loginPage()).flashing("info" -> "You must be logged in to do this!"))
       else
         None
     }
