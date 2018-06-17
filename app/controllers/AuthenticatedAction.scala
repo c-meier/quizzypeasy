@@ -40,7 +40,7 @@ class AuthenticatedAction @Inject()(val parser: BodyParsers.Default, usersDAO: U
 
     def filter[A](input: AuthenticatedRequest[A]) = Future.successful {
       if (input.userInfo.isEmpty)
-        Some(Forbidden("You are not authorized"))
+        Some(Redirect(routes.AuthentificationController.loginPage()).flashing("info" -> "You must be logged in to create a quiz!"))
       else
         None
     }
