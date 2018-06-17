@@ -24,10 +24,9 @@ class AuthenticatedAction @Inject()(val parser: BodyParsers.Default, usersDAO: U
           if u.isDefined
         } yield u
         user.map[AuthenticatedRequest[A]]({
-          case Some(User(Some(id), name, _, _, isAdmin)) => {
+          case Some(User(Some(id), name, _, _, isAdmin)) =>
             val userInfo = (id, name, isAdmin)
             new AuthenticatedRequest(Some(userInfo), request)
-          }
           case _ => new AuthenticatedRequest(None, request)
         })
     }

@@ -21,7 +21,7 @@ class QuizController @Inject()(cc: ControllerComponents, authenticatedAction: Au
     def executionContext = global
 
     def filter[A](input: AuthenticatedRequest[A]) = input.userInfo match {
-      case Some((id, name, isAdmin)) =>
+      case Some((id, _, _)) =>
         for {
           q <- quizzesDAO.listFromUser(id)
         } yield {
@@ -76,7 +76,7 @@ class QuizController @Inject()(cc: ControllerComponents, authenticatedAction: Au
     .andThen(UserQuizCheckAction(id)).async { implicit request =>
       val redirect = Redirect(routes.QuizController.quizQuestion(id, q))
       quizAnswerForm.bindFromRequest.fold(
-        formWithErrors => {
+        _ => {
           Future.successful {
             redirect.flashing("info" -> "The answer to the last question has not been saved because there was an error")
           }
@@ -91,7 +91,7 @@ class QuizController @Inject()(cc: ControllerComponents, authenticatedAction: Au
                   }
                 }
                 else{
-                  answersDAO.update(Answer(a.id, aData.answer.get, false, a.questionId, a.quizId)).map{
+                  answersDAO.update(Answer(a.id, aData.answer.get, isFinal = false, a.questionId, a.quizId)).map{
                     case 0 => redirect.flashing("info" -> "Could not update last question")
                     case _ => redirect
                   }
@@ -119,7 +119,7 @@ class QuizController @Inject()(cc: ControllerComponents, authenticatedAction: Au
     .andThen(UserQuizCheckAction(id)).async { implicit request =>
       val redirect = Redirect(routes.QuizController.quizQuestion(id, q))
       quizAnswerForm.bindFromRequest.fold(
-        formWithErrors => {
+        _ => {
           Future.successful {
             redirect.flashing("info" -> "The answer to the question has not been saved because there was an error")
           }
@@ -187,8 +187,8 @@ class QuizController @Inject()(cc: ControllerComponents, authenticatedAction: Au
       for {
         qs <- answersDAO.getQuestionsAndAnswers(id)
         as <- questionsDAO.getQuizPossibleAnswers(id)
-        qz <- quizzesDAO.update(Quiz(qs.head._2.id, calculateScore(qs, as), qs.head._2.categoryId, qs.head._2.userId))
-        qa <- answersDAO.lockAll(id)
+        _ <- quizzesDAO.update(Quiz(qs.head._2.id, calculateScore(qs, as), qs.head._2.categoryId, qs.head._2.userId))
+        _ <- answersDAO.lockAll(id)
       } yield Redirect(routes.QuizController.quizReview(id))
     }
 
@@ -213,7 +213,7 @@ class QuizController @Inject()(cc: ControllerComponents, authenticatedAction: Au
       val answerFor = for {
         quiz <- quizzesDAO.insert(Quiz(None, -1, categoryId, request.userInfo.get._1))
         questions <- questionsDAO.getQuestions(categoryId)
-        a <- answersDAO.insertAll(for (q <- questions) yield Answer(None, "", false, q.id.get, quiz.id.get))
+        a <- answersDAO.insertAll(for (q <- questions) yield Answer(None, "", isFinal = false, q.id.get, quiz.id.get))
       } yield a
 
       answerFor map {

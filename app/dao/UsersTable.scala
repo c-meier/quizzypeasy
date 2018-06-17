@@ -21,7 +21,7 @@ trait UsersComponent {
     */
   implicit lazy val localDateToDate = MappedColumnType.base[LocalDateTime, Timestamp](
     l => Timestamp.valueOf(l),
-    d => d.toLocalDateTime()
+    d => d.toLocalDateTime
   )
 
   class UsersTable(tag: Tag) extends Table[User](tag, "users") {

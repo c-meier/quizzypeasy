@@ -61,7 +61,7 @@ class AuthentificationController @Inject()(cc: ControllerComponents, usersDAO: U
         val passHash = BCrypt.hashpw(uData.password, BCrypt.gensalt)
         for {
           optU <- usersDAO.findByName(uData.username)
-          u <- if (optU.isEmpty) usersDAO.insert(models.User(None, uData.username, passHash, LocalDateTime.now(), false)) else Future.successful{Nil}
+          u <- if (optU.isEmpty) usersDAO.insert(models.User(None, uData.username, passHash, LocalDateTime.now(), isAdmin = false)) else Future.successful{Nil}
         } yield u match {
           case User(_, name, _, _, _) => Redirect(routes.HomeController.index()).withSession("connected" -> name)
           case Nil => BadRequest(views.html.signup(signUpForm.fill(uData).withGlobalError("Username already in use")))

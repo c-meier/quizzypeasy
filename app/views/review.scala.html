@@ -21,10 +21,10 @@
 
     <div class="card text-white bg-dark mt-3">
         <div class="card-body">
-            @if(allQuestions(0).quiz.score >= 0) {
-                <div>Your score is: @allQuestions(0).quiz.score / @allQuestions.size</div>
+            @if(allQuestions.head.quiz.score >= 0) {
+                <div>Your score is: @allQuestions.head.quiz.score / @allQuestions.size</div>
             } else {
-                @helper.form(action = routes.QuizController.quizScore(allQuestions(0).quiz.id.get)) {
+                @helper.form(action = routes.QuizController.quizScore(allQuestions.head.quiz.id.get)) {
                     @helper.CSRF.formField
                     <input type="submit" class="btn btn-primary" value="Score and lock" />
                     <span class="ml-2">After using this button you can no longer change any of your answers!</span>

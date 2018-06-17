@@ -25,11 +25,6 @@ trait AnswersComponent {
   }
 }
 
-
-// This class contains the object-oriented list of courses and offers methods to query the data.
-// A DatabaseConfigProvider is injected through dependency injection; it provides a Slick type bundling a database and
-// driver. The class extends the courses' query table and loads the JDBC profile configured in the application's
-// configuration file.
 @Singleton
 class AnswersDAO @Inject()(protected val dbConfigProvider: DatabaseConfigProvider)(implicit executionContext: ExecutionContext)
   extends HasDatabaseConfigProvider[JdbcProfile]
@@ -42,6 +37,10 @@ class AnswersDAO @Inject()(protected val dbConfigProvider: DatabaseConfigProvide
   val questions = TableQuery[QuestionsTable]
   val categories = TableQuery[CategoriesTable]
 
+  /**
+    * Recuperate all the question and associated information used by the given quiz.
+    * @param quizId The quiz id
+    */
   def getQuestionsAndAnswers(quizId: Long): Future[Seq[(Category, Quiz, Question, Answer)]] = {
     val questionAnswer = for {
       quiz <- quizzes if quiz.id === quizId
@@ -52,6 +51,11 @@ class AnswersDAO @Inject()(protected val dbConfigProvider: DatabaseConfigProvide
     db.run(questionAnswer.result)
   }
 
+  /**
+    * Recuperate the question and its associated information.
+    * @param quizId The quiz id
+    * @param answerId The id of the answer that links a question to a quiz
+    */
   def getQuestionAndAnswer(quizId: Long, answerId: Long): Future[Option[(Category, Quiz, Question, Answer)]] = {
     val questionAnswer = for {
       as <- answers if as.id === answerId && as.quizId === quizId
@@ -62,6 +66,11 @@ class AnswersDAO @Inject()(protected val dbConfigProvider: DatabaseConfigProvide
     db.run(questionAnswer.result.headOption)
   }
 
+  /**
+    * Recuperate the answer indicated by the given id if it belong to the given quiz.
+    * @param quizId The id of the quiz it must match.
+    * @param answerId The id of the answer to recuperate.
+    */
   def getQuizAnswer(quizId: Long, answerId: Long): Future[Option[Answer]] = {
     val answer = for {
       as <- answers if as.id === answerId && as.quizId === quizId
@@ -69,11 +78,21 @@ class AnswersDAO @Inject()(protected val dbConfigProvider: DatabaseConfigProvide
     db.run(answer.result.headOption)
   }
 
+  /**
+    * Update an answer.
+    * @param answer The answer to update.
+    * @return The number of row that were affected.
+    */
   def update(answer: Answer): Future[Int] = {
     val query = answers.insertOrUpdate(answer)
     db.run(query)
   }
 
+  /**
+    * Set all the answers that belong to the given quiz as final.
+    * @param quizId The id of the quiz.
+    * @return The number of row that were affected.
+    */
   def lockAll(quizId: Long): Future[Int] = {
     val query = for {
       a <- answers if a.quizId === quizId
@@ -81,11 +100,19 @@ class AnswersDAO @Inject()(protected val dbConfigProvider: DatabaseConfigProvide
     db.run(query.update(true))
   }
 
+  /**
+    * Recuperate all the answers that belong to the given quiz.
+    * @param quizId The id of the quiz.
+    */
   def getQuizAnswers(quizId: Long): Future[Seq[Answer]] = {
     val query = answers.filter(_.quizId === quizId)
     db.run(query.result)
   }
 
+  /**
+    * Insert all the given answers to the DB.
+    * @param as The sequence of answers.
+    */
   def insertAll(as: Seq[Answer]): Future[Seq[Answer]] = {
     val query = answers returning answers.map(_.id) into ((answer,id)=> answer.copy(Some(id)))
     db.run(query ++= as)
