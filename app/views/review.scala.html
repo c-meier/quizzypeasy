@@ -2,26 +2,35 @@
 @(allQuestions: Seq[FullQuizzQuestion])(implicit request: RequestHeader, messagesProvider: MessagesProvider)
 @main("Quiz review") {
     @for((f@FullQuizzQuestion(cat, quiz, quest, ans, pos), i) <- allQuestions.zipWithIndex) {
-        <div>
-            <a href="@routes.QuizController.quizQuestion(quiz.id.get, ans.id.get)">@{i + 1}</a>
-            @if(ans.isFinal) {
-                @if(f.isCorrect) {
-                    <div>You have correctly answered this question</div>
-                } else {
-                    <div>You have wrongly answered this question</div>
-                }
-            } else {
-                <div>You have not yet answered to this question</div>
-            }
+        <div class="card text-white bg-dark">
+            <div class="card-body">
+                <a class="btn @{if(ans.isFinal) "btn-secondary" else "btn-primary" }" href="@routes.QuizController.quizQuestion(quiz.id.get, ans.id.get)">@{i + 1}</a>
+                <span class="ml-2">
+                    @if(ans.isFinal) {
+                        @if(f.isCorrect) {
+                            You have correctly answered this question <span class="badge badge-success">Correct</span>
+                        } else {
+                            You have wrongly answered this question <span class="badge badge-danger">Wrong</span>
+                        }
+                    } else {
+                        You have not yet answered to this question
+                    }
+                </span>
+            </div>
         </div>
     }
 
-    @if(allQuestions(0).quiz.score >= 0) {
-        <div>Your score is: @allQuestions(0).quiz.score / @allQuestions.size</div>
-    } else {
-        @helper.form(action = routes.QuizController.quizScore(allQuestions(0).quiz.id.get)) {
-            @helper.CSRF.formField
-            <input type="submit" value="Score and lock" />
-        }
-    }
+    <div class="card text-white bg-dark mt-3">
+        <div class="card-body">
+            @if(allQuestions(0).quiz.score >= 0) {
+                <div>Your score is: @allQuestions(0).quiz.score / @allQuestions.size</div>
+            } else {
+                @helper.form(action = routes.QuizController.quizScore(allQuestions(0).quiz.id.get)) {
+                    @helper.CSRF.formField
+                    <input type="submit" class="btn btn-primary" value="Score and lock" />
+                    <span class="ml-2">After using this button you can no longer change any of your answers!</span>
+                }
+            }
+        </div>
+    </div>
 }

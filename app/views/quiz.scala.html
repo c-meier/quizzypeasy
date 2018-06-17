@@ -1,62 +1,77 @@
 @import models.QuestionType
+@import util.CustomHelpers
 @(quizAnswerForm: Form[QuizAnswerData], curQuestion: FullQuizzQuestion, allAnswers: Seq[Answer])(implicit request: RequestHeader, messagesProvider: MessagesProvider)
 @main("Quiz") {
+    <h2>Question</h2>
     @helper.form(action = routes.QuizController.submitQuizQuestion(curQuestion.userAnswer.quizId, curQuestion.userAnswer.id.get)) {
         @helper.CSRF.formField
-        @helper.input(quizAnswerForm("id")) { (id, name, value, args) =>
-            <input type="hidden" name="@name" id="@id" value="@value" @toHtmlArgs(args)>
-        }
+        <input type="hidden" name="@quizAnswerForm("id").name" id="@quizAnswerForm("id").id" value="@quizAnswerForm("id").value.get">
 
         @*Current question*@
-        <div>
-            <div>@curQuestion.question.name</div>
-            <div>@curQuestion.question.content</div>
+        <div class="card mt-3 bg-dark text-white">
+            <div class="card-header">
+                @curQuestion.question.name
+            </div>
+            <div class="card-body">
+                @curQuestion.question.content
+            </div>
             @if(curQuestion.userAnswer.isFinal) {
-                <div>You choose: @curQuestion.userAnswer.userAnswer</div>
-                @if(curQuestion.isCorrect) {
-                    <div class="correct-answer">The answer is correct. Felicitation.</div>
-                } else {
-                    <div class="wrong-answer">The answer is wrong.</div>
-                    <div>
-                        The correct answer must match:
-                        @curQuestion.possibleAnswers.filter(_._2).map(p => p._1.value)
-                    </div>
-                }
+                <div class="card-body">
+                    <div>You choose: @curQuestion.userAnswer.userAnswer</div>
+                    @if(curQuestion.isCorrect) {
+                        <div class="correct-answer">The answer is correct. Felicitation.</div>
+                    } else {
+                        <div class="wrong-answer">The answer is wrong.</div>
+                        <div>
+                            The correct answer must match:
+                            @curQuestion.possibleAnswers.filter(_._2).map(p => p._1.value)
+                        </div>
+                    }
+                </div>
             } else {
-                @helper.input(quizAnswerForm("id")) { (id, name, value, args) =>
-                    <input type="hidden" name="@name" id="@id" value="@value" @toHtmlArgs(args)>
-                }
-                @curQuestion.question.questionType match {
-                    case QuestionType.TrueOrFalse | QuestionType.MultipleChoice => {
-                        @helper.inputRadioGroup(quizAnswerForm("answer"), curQuestion.possibleAnswers.map(a => (a._1.value, a._1.value)), '_label -> "Answer", 'class -> "input")
+                <div class="card-body">
+                    @curQuestion.question.questionType match {
+                        case QuestionType.TrueOrFalse | QuestionType.MultipleChoice => {
+                            @helper.inputRadioGroup(quizAnswerForm("answer"), curQuestion.possibleAnswers.map(a => (a._1.value, a._1.value)), '_label -> "Answer", 'class -> "")
+                        }
+                        case QuestionType.Match => {
+                            @helper.inputText(quizAnswerForm("answer"), '_label -> "Answer", 'class -> "", 'autocomplete -> "off", 'placeholder -> "Your answer")
+                        }
                     }
-                    case QuestionType.Match => {
-                        @helper.inputText(quizAnswerForm("answer"), '_label -> "Answer", 'class -> "input", 'autocomplete -> "off", 'placeholder -> "Your answer")
-                    }
-                }
-                <input type="submit" value="Check" />
-                <input
-                    type="submit"
-                    value="Save"
-                    formaction="@routes.QuizController.skipToQuizQuestion(curQuestion.userAnswer.quizId, curQuestion.userAnswer.id.get)"
-                />
+                </div>
+                <div class="card-footer">
+                    <input class="btn btn-light" type="submit" value="Check" />
+                    <input class="btn btn-secondary"
+                        type="submit"
+                        value="Save"
+                        formaction="@routes.QuizController.skipToQuizQuestion(curQuestion.userAnswer.quizId, curQuestion.userAnswer.id.get)"
+                    />
+                </div>
             }
         </div>
 
         @*Link to the other questions*@
-        <div>
-            @for((q, i) <- allAnswers.zipWithIndex) {
-                <input
-                    type="submit"
-                    value="@{i + 1}"
-                    class="@{if(q.isFinal) "final" else "in_progress"}"
-                    @if(q.id.get == curQuestion.userAnswer.id.get){ disabled="true" }
-                    formaction="@routes.QuizController.skipToQuizQuestion(q.quizId, q.id.get)"
-                />
-            }
-        </div>
-        <div>
-            <a href="@routes.QuizController.quizReview(curQuestion.quiz.id.get)">Review all questions</a>
+        <div class="card bg-dark text-white mt-3">
+            <div class="card-body">
+                <nav aria-label="Navigate to other question">
+                    <ul class="pagination justify-content-center">
+                        @for((q, i) <- allAnswers.zipWithIndex) {
+                            <li class="page-item @{if(q.id.get == curQuestion.userAnswer.id.get) "disabled"}">
+                                <input
+                                    type="submit"
+                                    value="@{i + 1}"
+                                    class="page-link @{if(q.isFinal) "final" else "in_progress"}"
+                                    formmethod="@if(q.isFinal) {get} else {post}"
+                                    formaction="@if(q.isFinal) { @routes.QuizController.quizQuestion(q.quizId, q.id.get) } else { @routes.QuizController.skipToQuizQuestion(q.quizId, q.id.get) }"
+                                />
+                            </li>
+                        }
+                    </ul>
+                </nav>
+                <div class="text-center mt-1">
+                    <a href="@routes.QuizController.quizReview(curQuestion.quiz.id.get)">Review all questions</a>
+                </div>
+            </div>
         </div>
     }
 }

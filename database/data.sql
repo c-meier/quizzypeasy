@@ -1,5 +1,6 @@
 USE quizzypeasy;
 INSERT INTO users (user_name, password, date_inscription, is_admin) VALUES
+  (admin,	'$2a$10$xYTE4i3hs0LoFJiA/3zoheS/7C1tQdmBLTTu4MpqDXryOWHOy6aeW', '2018-06-17 12:12:20', TRUE),
   ('test','test',now(),FALSE),
   ('daniel','daniel',now(),TRUE);
 
