@@ -1,0 +1,15 @@
+@(quizAndCat: Seq[(Quiz, Category)])(implicit request: RequestHeader, messagesProvider: MessagesProvider)
+@main("Your quizzes") {
+    <div class="content">
+            <!--from https://codepen.io/maheshambure21/pen/bNXXeM/-->
+        <div class="grid">
+            @if(quizAndCat.isEmpty) {
+                You have not created any quiz yet.
+            } else {
+                @for((q, c) <- quizAndCat) {
+                    <div><a href="@routes.QuizController.quizReview(q.id.get)">@c.name : #@q.id.get @if(q.score >= 0){ ( @q.score pt ) }</a></div>
+                }
+            }
+        </div>
+    </div>
+}

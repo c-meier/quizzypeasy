@@ -44,12 +44,13 @@ class AnswersDAO @Inject()(protected val dbConfigProvider: DatabaseConfigProvide
   val questions = TableQuery[QuestionsTable]
   val categories = TableQuery[CategoriesTable]
 
-  def getQuestionsAndAnswers(quizId: Long): Future[Seq[(Quiz, Question, Answer)]] = {
+  def getQuestionsAndAnswers(quizId: Long): Future[Seq[(Category, Quiz, Question, Answer)]] = {
     val questionAnswer = for {
       quiz <- quizzes if quiz.id === quizId
       as <- answers if as.quizId === quizId
-      qs <- questions if as.questionId === qs.id
-    } yield (quiz, qs, as)
+      cat <- categories if cat.id === quiz.categoryId
+      qs <- questions if qs.id === as.questionId
+    } yield (cat, quiz, qs, as)
     db.run(questionAnswer.result)
   }
 
@@ -73,6 +74,13 @@ class AnswersDAO @Inject()(protected val dbConfigProvider: DatabaseConfigProvide
   def update(answer: Answer): Future[Int] = {
     val query = answers.insertOrUpdate(answer)
     db.run(query)
+  }
+
+  def lockAll(quizId: Long): Future[Int] = {
+    val query = for {
+      a <- answers if a.quizId === quizId
+    } yield a.isFinal
+    db.run(query.update(true))
   }
 
   def getQuizAnswers(quizId: Long): Future[Seq[Answer]] = {

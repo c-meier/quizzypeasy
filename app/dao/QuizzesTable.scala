@@ -1,13 +1,12 @@
 package dao
 
 import javax.inject.{Inject, Singleton}
-
 import play.api.db.slick.DatabaseConfigProvider
 import play.api.db.slick.HasDatabaseConfigProvider
 import slick.jdbc.JdbcProfile
 
 import scala.concurrent.{ExecutionContext, Future}
-import models.{Answer, Question, Quiz, User}
+import models._
 
 trait QuizzesComponent {
   self: HasDatabaseConfigProvider[JdbcProfile] =>
@@ -33,14 +32,24 @@ trait QuizzesComponent {
 // configuration file.
 @Singleton
 class QuizzesDAO @Inject()(protected val dbConfigProvider: DatabaseConfigProvider)(implicit executionContext: ExecutionContext)
-  extends HasDatabaseConfigProvider[JdbcProfile] with QuizzesComponent {
+  extends HasDatabaseConfigProvider[JdbcProfile] with QuizzesComponent with CategoriesComponent {
   import profile.api._
 
   // Get the object-oriented list of courses directly from the query table.
   val quizzes = TableQuery[QuizzesTable]
+  val categories = TableQuery[CategoriesTable]
+
 
   def list(): Future[Seq[Quiz]] = {
     val query = quizzes.sortBy(_.categoryId)
+    db.run(query.result)
+  }
+
+  def listFromUser(userId: Long): Future[Seq[(Quiz, Category)]] = {
+    val query = for {
+      q <- quizzes if q.userId === userId
+      c <- categories if c.id === q.categoryId
+    } yield (q, c)
     db.run(query.result)
   }
 

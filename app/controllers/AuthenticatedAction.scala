@@ -44,7 +44,7 @@ class AuthenticatedAction @Inject()(val parser: BodyParsers.Default, usersDAO: U
 
     def filter[A](input: AuthenticatedRequest[A]) = Future.successful {
       if (input.userInfo.isEmpty)
-        Some(Forbidden("hello world"))
+        Some(Forbidden("You are not authorized"))
       else
         None
     }

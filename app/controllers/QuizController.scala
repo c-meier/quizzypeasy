@@ -14,6 +14,7 @@ import play.api.mvc._
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.{Await, Future}
+import scala.util.matching.Regex
 
 
 /**
@@ -104,11 +105,42 @@ class QuizController @Inject()(cc: ControllerComponents, authenticatedAction: Au
     )
   }
 
-  /*
-  def quizReview(id: Long) = Action { implicit request =>
-    Ok(views.html.review())
+  def quizReview(id: Long) = authenticatedAction.andThen(authenticatedAction.PermissionCheckAction).async { implicit request =>
+    for {
+      qs <- answersDAO.getQuestionsAndAnswers(id)
+      as <- questionsDAO.getQuizPossibleAnswers(id)
+    } yield {
+      val posAnsMap = as.groupBy(_._2.questionId)
+      Ok(views.html.review(qs.map({
+        case (cat, quiz, quest, ans) => FullQuizzQuestion(cat, quiz, quest, ans, posAnsMap(quest.id.get).map(t => (t._1, t._2.correctAnswer)))
+      })))
+    }
   }
 
+  def quizScore(id: Long) = authenticatedAction.andThen(authenticatedAction.PermissionCheckAction).async { implicit request =>
+    def calculateScore(qs: Seq[(Category, Quiz, Question, Answer)], as: Seq[(PossibleAnswer, AnswersQuestion)]) : Int = {
+      val posAnsMap = as.groupBy(_._2.questionId)
+      val allQuestions = qs.map({
+        case (cat, quiz, quest, ans) => FullQuizzQuestion(cat, quiz, quest, ans, posAnsMap(quest.id.get).map(t => (t._1, t._2.correctAnswer)))
+      })
+      allQuestions.count(_.isCorrect)
+    }
+    for {
+      qs <- answersDAO.getQuestionsAndAnswers(id)
+      as <- questionsDAO.getQuizPossibleAnswers(id)
+      qz <- quizzesDAO.update(Quiz(qs(0)._2.id, calculateScore(qs, as), qs(0)._2.categoryId, qs(0)._2.userId))
+      qa <- answersDAO.lockAll(id)
+    } yield Redirect(routes.QuizController.quizReview(id))
+  }
+
+  def listQuizzes() = authenticatedAction.andThen(authenticatedAction.PermissionCheckAction).async { implicit request =>
+    for {
+      s <- quizzesDAO.listFromUser(request.userInfo.get._1)
+    } yield {
+      Ok(views.html.userquizzes(s))
+    }
+  }
+/*
   def quizAnswer(id: Long, q: Long) = Action.async { implicit request =>
     quizAnswerForm.bindFromRequest.fold(
       formWithErrors => {
@@ -128,7 +160,7 @@ class QuizController @Inject()(cc: ControllerComponents, authenticatedAction: Au
 
   def create(categoryId: Long) = authenticatedAction.andThen(authenticatedAction.PermissionCheckAction).async { implicit request =>
     val answerFor = for {
-      quiz <- quizzesDAO.insert(Quiz(None, 0, categoryId, request.userInfo.get._1))
+      quiz <- quizzesDAO.insert(Quiz(None, -1, categoryId, request.userInfo.get._1))
       questions <- questionsDAO.getQuestions(categoryId)
       a <- answersDAO.insertAll(for (q <- questions) yield Answer(None, "", false, q.id.get, quiz.id.get))
     } yield a

@@ -29,6 +29,7 @@
                     @request.session.get("connected") match {
                         case Some(u) => {
                             <li>Hello @u</li>
+                            <li><a href="@routes.QuizController.listQuizzes()">Your quizzes</a></li>
                             <li><a href="@routes.AuthentificationController.logout()">Logout</a></li>
                         }
                         case None => {
