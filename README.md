@@ -1,10 +1,10 @@
 # Description
 
-**Quizzy Peasy** is a web application where you can test your knowledge about a selected theme. It offers the features :
+**Quizzy Peasy** is a web application where you can test your knowledge about a selected category. It offers the features :
 
-1. Login/Signup/Logout of the application. You need to be log to access the features of the application
+1. Login/Signup/Logout of the application. You need to be log to access the features of the application.
 2. Select a quiz category. The quiz is composed of 10 questions.
-3. Review and check your answers
+3. Review and check your answers.
 
 # Technologies used
 
@@ -17,7 +17,7 @@
 
 # Deployement
 
-1. Execute in order the folowing file for the database
+1. Execute in order the following file for the database
   a. *create.sql*
   b. *tables.sql*
   c. *data.sql*
