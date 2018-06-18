@@ -2,7 +2,7 @@
 
 **Quizzy Peasy** is a web application where you can test your knowledge about a selected category. It offers the features :
 
-1. Login/Signup/Logout of the application. You need to be log to access the features of the application.
+1. Login/Signup/Logout of the application. You need to be logged to access the features of the application.
 2. Select a quiz category. The quiz is composed of 10 questions.
 3. Review and check your answers.
 
@@ -34,6 +34,7 @@ At the moment, the application is functionnal. You can use the different feature
 * Automatic review when all answers have been checked
 * A statistic page for the user
 * Add a challenge time to answer a quiz
+* Allow for formated question with Markdown
 
 ## Authors
 Made by.
